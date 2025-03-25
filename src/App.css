@@ -1,0 +1,196 @@
+:root {
+  --primary-dark-blue: #1a1f4d;
+  --primary-coral: #ff6347;
+  --primary-purple: #6a0dad;
+  --light-gray: #f5f5f5;
+  --text-dark: #333;
+  --text-light: #fff;
+  --border-light: #e0e0e0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background-color: var(--light-gray);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--light-gray);
+  position: relative;
+}
+
+.app.mobile-view .content {
+  width: 100%;
+}
+
+.content {
+  flex-grow: 1;
+  margin-left: 240px;
+  overflow-y: auto;
+  transition: margin-left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--light-gray);
+  padding: 0;
+  width: calc(100% - 240px);
+}
+
+.content.sidebar-collapsed {
+  margin-left: 60px;
+  width: calc(100% - 60px);
+}
+
+/* Estilos para a visão de cliente (sem sidebar) */
+.client-view {
+  margin-left: 0;
+  width: 100%;
+  max-width: 100%;
+  transition: margin 0.3s ease;
+}
+
+/* Garantir que o conteúdo ocupe toda a largura quando não há sidebar */
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0;
+    width: 100%;
+    padding-top: 15px;
+  }
+
+  .content.sidebar-collapsed {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  /* Ajustes gerais de padding para mobile */
+  .dashboard-container,
+  .leads-container,
+  .clients-container,
+  .contratos-container,
+  .pagamentos-container,
+  .propostas-container,
+  .agenda-container,
+  .configuracoes-container {
+    padding: 40px 15px 15px 15px !important;
+  }
+
+  /* Ajustes para tabelas no mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Ajustes para cards no mobile */
+  .metrics-grid,
+  .charts-container,
+  .activities-container {
+    grid-template-columns: 1fr !important;
+  }
+
+  .client-view {
+    margin-left: 0;
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Ajustes adicionais para telas muito pequenas */
+  .metrics-card {
+    padding: 15px !important;
+  }
+
+  h1,
+  h2 {
+    font-size: 1.5rem !important;
+  }
+
+  .btn {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Utilitários */
+.text-center {
+  text-align: center;
+}
+
+.mt-1 {
+  margin-top: 5px;
+}
+.mt-2 {
+  margin-top: 10px;
+}
+.mt-3 {
+  margin-top: 15px;
+}
+.mt-4 {
+  margin-top: 20px;
+}
+
+.mb-1 {
+  margin-bottom: 5px;
+}
+.mb-2 {
+  margin-bottom: 10px;
+}
+.mb-3 {
+  margin-bottom: 15px;
+}
+.mb-4 {
+  margin-bottom: 20px;
+}
+
+.ml-1 {
+  margin-left: 5px;
+}
+.ml-2 {
+  margin-left: 10px;
+}
+.ml-3 {
+  margin-left: 15px;
+}
+.ml-4 {
+  margin-left: 20px;
+}
+
+.mr-1 {
+  margin-right: 5px;
+}
+.mr-2 {
+  margin-right: 10px;
+}
+.mr-3 {
+  margin-right: 15px;
+}
+.mr-4 {
+  margin-right: 20px;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
