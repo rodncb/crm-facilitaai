@@ -126,16 +126,6 @@ const Login = () => {
             {loading ? "Autenticando..." : "Entrar"}
           </button>
         </form>
-
-        <div className="login-footer">
-          <p>Credenciais de acesso:</p>
-          <p>
-            <strong>Email:</strong> rodrigo@facilitaai.com.br
-          </p>
-          <p>
-            <strong>Senha:</strong> FacilitaAI@2023
-          </p>
-        </div>
       </div>
     </div>
   );

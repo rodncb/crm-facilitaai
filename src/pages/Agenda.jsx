@@ -19,200 +19,36 @@ const Agenda = () => {
     new Date().getFullYear()
   );
   const [termoBusca, setTermoBusca] = useState("");
+  const [eventosFiltrados, setEventosFiltrados] = useState([]);
 
   // Carregar dados reais do sistema
   useEffect(() => {
     carregarEventos();
   }, []);
 
-  // Função para carregar eventos de todas as fontes
+  // Função para carregar os eventos (simulados e reais)
   const carregarEventos = () => {
-    try {
-      // Iniciar com array vazio
-      let todosEventos = [];
-      let proximoId = 1;
+    let proximoId = 1;
 
-      // Adicionar a proposta real do Marco
-      const propostaMarco = {
-        id: proximoId++,
-        tipo: "proposta",
-        titulo: "Validade de proposta",
-        descricao: "PROP-2025-004 - Marco (Startup XYZ)",
-        data: "2025-03-27", // Data de validade da proposta
-        status: "pendente",
-        link: "/propostas",
-        icone: <FaFileSignature />,
-        isReal: true, // Flag para identificar dados reais
-      };
+    // Adicionar a proposta real do Marco
+    const propostaMarco = {
+      id: proximoId++,
+      tipo: "proposta",
+      titulo: "Validade de proposta",
+      descricao: "PROP-2025-004 - Marco (Startup XYZ)",
+      data: "2025-03-26", // Data de validade da proposta (corrigida para 26/03/2025)
+      status: "pendente",
+      link: "/propostas",
+      icone: <FaFileSignature />,
+      isReal: true, // Flag para identificar dados reais
+    };
 
-      todosEventos.push(propostaMarco);
+    // Apenas incluir o evento real
+    const todosEventos = [propostaMarco];
 
-      // 1. Carregar pagamentos simulados para demonstração
-      const pagamentosDemonstracao = [
-        {
-          id: proximoId++,
-          tipo: "pagamento",
-          titulo: "Pagamento de contrato",
-          descricao: "CONT-230401-123 - João Silva (TechCorp)",
-          data: "2025-04-15",
-          status: "pendente",
-          valorAssociado: "R$ 1.500,00",
-          link: "/pagamentos",
-          icone: <FaFileInvoiceDollar />,
-          isDemo: true,
-        },
-        {
-          id: proximoId++,
-          tipo: "pagamento",
-          titulo: "Pagamento de contrato",
-          descricao: "CONT-230402-456 - Maria Santos (Inovação Ltda)",
-          data: "2025-05-30",
-          status: "atrasado",
-          valorAssociado: "R$ 3.000,00",
-          link: "/pagamentos",
-          icone: <FaFileInvoiceDollar />,
-          isDemo: true,
-        },
-      ];
-
-      // 2. Adicionar reuniões simuladas para demonstração
-      const reunioesDemonstracao = [
-        {
-          id: proximoId++,
-          tipo: "reuniao",
-          titulo: "Follow-up com lead",
-          descricao: "Leandro Marques - Anahata Home",
-          data: "2025-03-28",
-          hora: "10:00",
-          status: "pendente",
-          link: "/leads",
-          icone: <FaUserFriends />,
-          isDemo: true,
-        },
-        {
-          id: proximoId++,
-          tipo: "reuniao",
-          titulo: "Reunião com cliente",
-          descricao: "João Silva - TechCorp",
-          data: "2025-03-30",
-          hora: "14:30",
-          status: "pendente",
-          link: "/clientes",
-          icone: <FaUserFriends />,
-          isDemo: true,
-        },
-      ];
-
-      // 3. Adicionar contratos simulados para demonstração
-      const contratosDemonstracao = [
-        {
-          id: proximoId++,
-          tipo: "contrato",
-          titulo: "Vencimento de contrato",
-          descricao: "CONT-230401-123 - João Silva (TechCorp)",
-          data: "2025-09-30",
-          status: "pendente",
-          link: "/contratos",
-          icone: <FaFileContract />,
-          isDemo: true,
-        },
-      ];
-
-      // Adicionar todos os eventos de demonstração à lista
-      todosEventos = todosEventos.concat(
-        pagamentosDemonstracao,
-        reunioesDemonstracao,
-        contratosDemonstracao
-      );
-
-      // Verificar se há o filtro especial para mostrar apenas dados reais
-      // (pode ser ativado depois, se necessário)
-      const mostrarApenasReais = false;
-      if (mostrarApenasReais) {
-        todosEventos = todosEventos.filter((evento) => evento.isReal === true);
-      }
-
-      setEventos(todosEventos);
-      console.log("Eventos carregados:", todosEventos);
-    } catch (error) {
-      console.error("Erro ao carregar eventos:", error);
-      // Em caso de erro, usar dados de exemplo
-      setEventos(gerarEventosExemplo());
-    }
-  };
-
-  // Verificar status do evento baseado na data
-  const verificarStatusEvento = (dataStr, statusOriginal = null) => {
-    // Se já tiver um status definido como "concluído" ou "aprovado", manter
-    if (statusOriginal === "aprovada" || statusOriginal === "pago") {
-      return "concluido";
-    }
-
-    // Se já tiver status definido como "recusada", manter como "atrasado"
-    if (statusOriginal === "recusada") {
-      return "atrasado";
-    }
-
-    const hoje = new Date();
-    const data = new Date(dataStr);
-
-    // Se a data for anterior a hoje, está atrasado
-    if (data < hoje) {
-      return "atrasado";
-    }
-
-    // Se for dentro dos próximos 7 dias, é pendente
-    const seteDiasDepois = new Date(hoje);
-    seteDiasDepois.setDate(hoje.getDate() + 7);
-
-    if (data <= seteDiasDepois) {
-      return "pendente";
-    }
-
-    // Se for mais que 7 dias no futuro, também é pendente (mas poderia ser outro status)
-    return "pendente";
-  };
-
-  // Função para gerar eventos de exemplo como fallback
-  const gerarEventosExemplo = () => {
-    const dataAtual = new Date();
-    const ano = dataAtual.getFullYear();
-    const mes = dataAtual.getMonth();
-
-    return [
-      {
-        id: 1,
-        tipo: "pagamento",
-        titulo: "Pagamento de contrato",
-        descricao: "CONT-230401-123 - João Silva (TechCorp)",
-        data: `${ano}-${String(mes + 1).padStart(2, "0")}-15`,
-        status: "pendente",
-        valorAssociado: "R$ 1.500,00",
-        link: "/pagamentos",
-        icone: <FaFileInvoiceDollar />,
-      },
-      {
-        id: 2,
-        tipo: "reuniao",
-        titulo: "Follow-up com cliente",
-        descricao: "Maria Santos - Inovação Ltda",
-        data: `${ano}-${String(mes + 1).padStart(2, "0")}-20`,
-        hora: "15:45",
-        status: "pendente",
-        link: "/clientes",
-        icone: <FaUserFriends />,
-      },
-      {
-        id: 3,
-        tipo: "contrato",
-        titulo: "Vencimento de contrato",
-        descricao: "CONT-230401-123 - João Silva (TechCorp)",
-        data: `${ano}-${String(mes + 2).padStart(2, "0")}-10`,
-        status: "pendente",
-        link: "/contratos",
-        icone: <FaFileContract />,
-      },
-    ];
+    // Definir estado com eventos
+    setEventos(todosEventos);
+    setEventosFiltrados(todosEventos);
   };
 
   const formatarData = (dataStr) => {
@@ -239,18 +75,22 @@ const Agenda = () => {
   };
 
   // Filtrar eventos por tipo e termo de busca
-  const eventosFiltrados = eventos.filter((evento) => {
-    // Filtrar por tipo
-    const matchTipo = filtroTipo === "todos" || evento.tipo === filtroTipo;
+  useEffect(() => {
+    const filtrados = eventos.filter((evento) => {
+      // Filtrar por tipo
+      const matchTipo = filtroTipo === "todos" || evento.tipo === filtroTipo;
 
-    // Filtrar por termo de busca
-    const matchBusca =
-      termoBusca === "" ||
-      evento.titulo.toLowerCase().includes(termoBusca.toLowerCase()) ||
-      evento.descricao.toLowerCase().includes(termoBusca.toLowerCase());
+      // Filtrar por termo de busca
+      const matchBusca =
+        termoBusca === "" ||
+        evento.titulo.toLowerCase().includes(termoBusca.toLowerCase()) ||
+        evento.descricao.toLowerCase().includes(termoBusca.toLowerCase());
 
-    return matchTipo && matchBusca;
-  });
+      return matchTipo && matchBusca;
+    });
+
+    setEventosFiltrados(filtrados);
+  }, [eventos, filtroTipo, termoBusca]);
 
   // Ordenar eventos por data
   const eventosOrdenados = [...eventosFiltrados].sort((a, b) => {
