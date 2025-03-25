@@ -126,6 +126,9 @@ const App = () => {
             element={<PropostaCliente />}
           />
 
+          {/* Rota para compatibilidade com acesso direto no GitHub Pages */}
+          <Route path="*/proposta/:id" element={<PropostaCliente />} />
+
           {/* Rotas protegidas (requerem autenticação) */}
           <Route
             path="/*"
