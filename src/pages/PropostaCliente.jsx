@@ -26,102 +26,163 @@ const PropostaCliente = () => {
 
     // Função para carregar dados da proposta
     const carregarProposta = async () => {
-      // Simulando o carregamento de dados da proposta
-      setTimeout(() => {
-        try {
-          // Verificar se a proposta já foi aprovada
-          const propostas = JSON.parse(
-            localStorage.getItem("propostas") || "[]"
-          );
-          console.log("Todas as propostas:", propostas);
+      try {
+        // Verificar se a proposta já foi aprovada
+        const propostas = JSON.parse(localStorage.getItem("propostas") || "[]");
+        console.log("Todas as propostas:", propostas);
 
-          // Procurar proposta pelo ID ou código
-          let propostaEncontrada = propostas.find(
-            (p) => p.numero === `PROP-${propostaId}`
-          );
+        // Procurar proposta pelo ID ou código
+        let propostaEncontrada = propostas.find(
+          (p) => p.numero === `PROP-${propostaId}`
+        );
 
-          // Tentar match alternativo se não encontrou
-          if (!propostaEncontrada) {
-            propostaEncontrada = propostas.find((p) =>
-              p.numero
-                .replace(/[^a-zA-Z0-9]/g, "")
-                .toLowerCase()
-                .includes(propostaId.toLowerCase())
+        // Tentar match alternativo se não encontrou
+        if (!propostaEncontrada) {
+          // Tentar encontrar por ID sem o prefixo
+          propostaEncontrada = propostas.find((p) => {
+            const numeroSemPrefixo = p.numero.replace("PROP-", "");
+            return numeroSemPrefixo.toLowerCase() === propostaId.toLowerCase();
+          });
+        }
+
+        // Tentar match por número sem caracteres especiais
+        if (!propostaEncontrada) {
+          propostaEncontrada = propostas.find((p) => {
+            const numeroLimpo = p.numero
+              .replace(/[^a-zA-Z0-9]/g, "")
+              .toLowerCase();
+            const idLimpo = propostaId
+              .replace(/[^a-zA-Z0-9]/g, "")
+              .toLowerCase();
+            return (
+              numeroLimpo.includes(idLimpo) || idLimpo.includes(numeroLimpo)
             );
+          });
+        }
+
+        console.log("Proposta encontrada:", propostaEncontrada);
+
+        let propostaProcessada = null;
+
+        if (propostaEncontrada) {
+          // Verificar se já foi aprovada
+          if (propostaEncontrada.status === "aprovada") {
+            setError("Esta proposta já foi aprovada anteriormente.");
+            setLoading(false);
+            return;
           }
 
-          // Se ainda não encontrou, verificar pelo ID da URL diretamente
-          if (!propostaEncontrada) {
-            propostaEncontrada = propostas.find(
-              (p) => p.numero.toLowerCase() === propostaId.toLowerCase()
-            );
-          }
+          // Preparar informações do cliente se não estiverem presentes
+          if (!propostaEncontrada.cliente_info) {
+            // Buscar cliente associado
+            const clienteInfo = {};
 
-          console.log("Proposta encontrada:", propostaEncontrada);
+            if (propostaEncontrada.origem === "cliente") {
+              const clientes = JSON.parse(
+                localStorage.getItem("clientes") || "[]"
+              );
+              const cliente = clientes.find(
+                (c) => c.id === propostaEncontrada.clienteId
+              );
 
-          if (propostaEncontrada) {
-            // Verificar se já foi aprovada
-            if (propostaEncontrada.status === "aprovada") {
-              setError("Esta proposta já foi aprovada anteriormente.");
-              setLoading(false);
-              return;
+              if (cliente) {
+                clienteInfo.nome = cliente.nome || "Cliente";
+                clienteInfo.empresa = cliente.empresa || "";
+                clienteInfo.email = cliente.email || "";
+                clienteInfo.telefone = cliente.telefone || "";
+                clienteInfo.cnpj = cliente.cnpj || "00.000.000/0001-00";
+                clienteInfo.endereco =
+                  cliente.endereco || "Endereço não informado";
+                clienteInfo.cidade = cliente.cidade || "Cidade";
+                clienteInfo.estado = cliente.estado || "Estado";
+              }
+            } else {
+              // Se for lead
+              const leads = JSON.parse(localStorage.getItem("leads") || "[]");
+              const lead = leads.find(
+                (l) => l.id === propostaEncontrada.clienteId
+              );
+
+              if (lead) {
+                clienteInfo.nome = lead.nome || "Lead";
+                clienteInfo.empresa = lead.empresa || "";
+                clienteInfo.email = lead.email || "";
+                clienteInfo.telefone = lead.telefone || "";
+              }
             }
 
-            setProposta(propostaEncontrada);
-            setLoading(false);
-          } else {
-            // Se não encontrou a proposta, use dados mockados para demonstração
-            // (Este é um fallback apenas para demonstração - Em produção deveria retornar erro 404)
-            console.log(
-              "Proposta não encontrada, usando dados de demonstração"
-            );
-
-            // Simular uma proposta mock para demonstração
-            const propostaDemo = {
-              id: "2023-003",
-              numero: `PROP-${propostaId}`,
-              origem: "cliente",
-              cliente: "Cliente Demonstração",
-              clienteId: 2,
-              data: "2023-06-15",
-              validade: "2023-07-15",
-              valorTotal: 12500.0,
-              status: "pendente",
-              contratoGerado: false,
-              itens: [
-                {
-                  id: 1,
-                  descricao: "Serviço de demonstração 1",
-                  quantidade: 1,
-                  valorUnitario: 8500.0,
-                },
-                {
-                  id: 2,
-                  descricao: "Serviço de demonstração 2",
-                  quantidade: 1,
-                  valorUnitario: 2000.0,
-                },
-                {
-                  id: 3,
-                  descricao: "Serviço mensal",
-                  quantidade: 2,
-                  valorUnitario: 1000.0,
-                },
-              ],
-              observacoes:
-                "Esta é uma proposta de demonstração para fins de teste.",
-              condicoesEntrega: "Entrega em 30 dias após aprovação.",
+            // Adicionar informações do cliente à proposta
+            propostaProcessada = {
+              ...propostaEncontrada,
+              cliente_info: clienteInfo,
             };
-
-            setProposta(propostaDemo);
-            setLoading(false);
+          } else {
+            propostaProcessada = propostaEncontrada;
           }
-        } catch (error) {
-          console.error("Erro ao processar proposta:", error);
-          setError("Erro ao carregar a proposta. Por favor, tente novamente.");
+
+          setProposta(propostaProcessada);
+          setLoading(false);
+        } else {
+          // Se não encontrou a proposta, use dados mockados para demonstração
+          console.log("Proposta não encontrada, usando dados de demonstração");
+
+          // Simular uma proposta mock para demonstração
+          const propostaDemo = {
+            id: "demo-001",
+            numero: `PROP-${propostaId}`,
+            origem: "cliente",
+            data: new Date().toISOString().split("T")[0],
+            validade: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split("T")[0],
+            valorTotal: 12500.0,
+            status: "pendente",
+            contratoGerado: false,
+            itens: [
+              {
+                id: 1,
+                descricao: "Serviço de desenvolvimento de software",
+                quantidade: 1,
+                valorUnitario: 8500.0,
+              },
+              {
+                id: 2,
+                descricao: "Implementação e treinamento",
+                quantidade: 1,
+                valorUnitario: 2000.0,
+              },
+              {
+                id: 3,
+                descricao: "Suporte mensal",
+                quantidade: 2,
+                valorUnitario: 1000.0,
+              },
+            ],
+            cliente_info: {
+              nome: "Cliente Demonstração",
+              empresa: "Empresa Demo Ltda",
+              cargo: "Diretor",
+              cnpj: "12.345.678/0001-90",
+              endereco: "Av. Demonstração, 1000",
+              cidade: "Rio de Janeiro",
+              estado: "RJ",
+              cep: "22000-000",
+              telefone: "(21) 98765-4321",
+              email: "cliente@demo.com.br",
+            },
+            observacoes:
+              "Esta é uma proposta de demonstração para fins de teste.",
+            condicoesEntrega: "Entrega em 30 dias após aprovação da proposta.",
+          };
+
+          setProposta(propostaDemo);
           setLoading(false);
         }
-      }, 1500);
+      } catch (error) {
+        console.error("Erro ao processar proposta:", error);
+        setError("Erro ao carregar a proposta. Por favor, tente novamente.");
+        setLoading(false);
+      }
     };
 
     carregarProposta();
@@ -242,6 +303,14 @@ const PropostaCliente = () => {
           <script>
             // Imprimir automaticamente e fechar a janela depois
             window.onload = function() {
+              // Substituir caminhos de imagem antes de imprimir
+              const images = document.querySelectorAll('img');
+              images.forEach(img => {
+                if (img.src.includes('/images/logo.png')) {
+                  img.src = '${window.location.origin}/crm-facilitaai/images/logo.png';
+                }
+              });
+              
               setTimeout(function() {
                 window.print();
                 setTimeout(function() {
@@ -483,7 +552,7 @@ const PropostaCliente = () => {
           <div className="proposta-preview">
             <div className="proposta-header">
               <div className="proposta-logo">
-                <img src="/images/logo.png" alt="Logo Facilita AI" />
+                <img src="./images/logo.png" alt="Logo Facilita AI" />
               </div>
               <div className="proposta-info">
                 <h1>Proposta Comercial</h1>
