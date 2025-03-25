@@ -32,85 +32,108 @@ const Agenda = () => {
       let todosEventos = [];
       let proximoId = 1;
 
-      // 1. Carregar pagamentos
-      const pagamentos = JSON.parse(localStorage.getItem("pagamentos") || "[]");
-      const eventosPagamentos = pagamentos.map((pagamento) => ({
-        id: proximoId++,
-        tipo: "pagamento",
-        titulo: "Pagamento de contrato",
-        descricao: `${pagamento.contrato} - ${pagamento.cliente}`,
-        data: pagamento.dataVencimento,
-        status:
-          pagamento.status === "pago"
-            ? "concluido"
-            : pagamento.status === "atrasado"
-            ? "atrasado"
-            : "pendente",
-        valorAssociado: pagamento.valor.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        }),
-        link: "/pagamentos",
-        icone: <FaFileInvoiceDollar />,
-      }));
-      todosEventos = todosEventos.concat(eventosPagamentos);
-
-      // 2. Carregar leads com próximo followup
-      const leads = JSON.parse(localStorage.getItem("leads") || "[]");
-      const eventosLeads = leads
-        .filter((lead) => lead.proximoFollowup) // Verificar se tem data de followup
-        .map((lead) => ({
-          id: proximoId++,
-          tipo: "reuniao",
-          titulo: "Follow-up com lead",
-          descricao: `${lead.nome} - ${lead.empresa}`,
-          data: lead.proximoFollowup,
-          hora: "10:00", // Hora fictícia, já que não temos horário nos dados
-          status: verificarStatusEvento(lead.proximoFollowup),
-          link: "/leads",
-          icone: <FaUserFriends />,
-        }));
-      todosEventos = todosEventos.concat(eventosLeads);
-
-      // 3. Carregar propostas com data de validade
-      const propostas = JSON.parse(localStorage.getItem("propostas") || "[]");
-      const eventosPropostas = propostas.map((proposta) => ({
+      // Adicionar a proposta real do Marco
+      const propostaMarco = {
         id: proximoId++,
         tipo: "proposta",
         titulo: "Validade de proposta",
-        descricao: `${proposta.numero} - ${proposta.cliente}`,
-        data: proposta.validade,
-        status: verificarStatusEvento(proposta.validade, proposta.status),
+        descricao: "PROP-2025-004 - Marco (Startup XYZ)",
+        data: "2025-03-27", // Data de validade da proposta
+        status: "pendente",
         link: "/propostas",
         icone: <FaFileSignature />,
-      }));
-      todosEventos = todosEventos.concat(eventosPropostas);
+        isReal: true, // Flag para identificar dados reais
+      };
 
-      // 4. Carregar contratos se existirem
-      const contratos = JSON.parse(localStorage.getItem("contratos") || "[]");
-      const eventosContratos = contratos
-        .filter((contrato) => contrato.dataTermino) // Verificar se tem data de término
-        .map((contrato) => ({
+      todosEventos.push(propostaMarco);
+
+      // 1. Carregar pagamentos simulados para demonstração
+      const pagamentosDemonstracao = [
+        {
+          id: proximoId++,
+          tipo: "pagamento",
+          titulo: "Pagamento de contrato",
+          descricao: "CONT-230401-123 - João Silva (TechCorp)",
+          data: "2025-04-15",
+          status: "pendente",
+          valorAssociado: "R$ 1.500,00",
+          link: "/pagamentos",
+          icone: <FaFileInvoiceDollar />,
+          isDemo: true,
+        },
+        {
+          id: proximoId++,
+          tipo: "pagamento",
+          titulo: "Pagamento de contrato",
+          descricao: "CONT-230402-456 - Maria Santos (Inovação Ltda)",
+          data: "2025-05-30",
+          status: "atrasado",
+          valorAssociado: "R$ 3.000,00",
+          link: "/pagamentos",
+          icone: <FaFileInvoiceDollar />,
+          isDemo: true,
+        },
+      ];
+
+      // 2. Adicionar reuniões simuladas para demonstração
+      const reunioesDemonstracao = [
+        {
+          id: proximoId++,
+          tipo: "reuniao",
+          titulo: "Follow-up com lead",
+          descricao: "Leandro Marques - Anahata Home",
+          data: "2025-03-28",
+          hora: "10:00",
+          status: "pendente",
+          link: "/leads",
+          icone: <FaUserFriends />,
+          isDemo: true,
+        },
+        {
+          id: proximoId++,
+          tipo: "reuniao",
+          titulo: "Reunião com cliente",
+          descricao: "João Silva - TechCorp",
+          data: "2025-03-30",
+          hora: "14:30",
+          status: "pendente",
+          link: "/clientes",
+          icone: <FaUserFriends />,
+          isDemo: true,
+        },
+      ];
+
+      // 3. Adicionar contratos simulados para demonstração
+      const contratosDemonstracao = [
+        {
           id: proximoId++,
           tipo: "contrato",
           titulo: "Vencimento de contrato",
-          descricao: `${contrato.numero} - ${
-            contrato.nome || contrato.cliente
-          }`,
-          data: contrato.dataTermino,
-          status: verificarStatusEvento(contrato.dataTermino),
+          descricao: "CONT-230401-123 - João Silva (TechCorp)",
+          data: "2025-09-30",
+          status: "pendente",
           link: "/contratos",
           icone: <FaFileContract />,
-        }));
-      todosEventos = todosEventos.concat(eventosContratos);
+          isDemo: true,
+        },
+      ];
 
-      // Se não tiver eventos, e estivermos em ambiente de desenvolvimento, usar dados de exemplo
-      if (todosEventos.length === 0) {
-        console.log("Nenhum evento encontrado, usando dados de exemplo");
-        todosEventos = gerarEventosExemplo();
+      // Adicionar todos os eventos de demonstração à lista
+      todosEventos = todosEventos.concat(
+        pagamentosDemonstracao,
+        reunioesDemonstracao,
+        contratosDemonstracao
+      );
+
+      // Verificar se há o filtro especial para mostrar apenas dados reais
+      // (pode ser ativado depois, se necessário)
+      const mostrarApenasReais = false;
+      if (mostrarApenasReais) {
+        todosEventos = todosEventos.filter((evento) => evento.isReal === true);
       }
 
       setEventos(todosEventos);
+      console.log("Eventos carregados:", todosEventos);
     } catch (error) {
       console.error("Erro ao carregar eventos:", error);
       // Em caso de erro, usar dados de exemplo

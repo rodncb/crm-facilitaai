@@ -50,11 +50,31 @@ const Contratos = () => {
           Array.isArray(contratosData) &&
           contratosData.length > 0
         ) {
-          setContratos(contratosData);
+          // Verificar e corrigir cada contrato para evitar erros
+          const contratosCorrigidos = contratosData.map((contrato) => {
+            // Garantir que cliente existe ou criar um objeto vazio
+            if (!contrato.cliente) {
+              contrato.cliente = {
+                nome: "Cliente não especificado",
+                empresa: "",
+              };
+            }
+
+            // Garantir que valorTotal é um número
+            if (typeof contrato.valorTotal !== "number") {
+              contrato.valorTotal = 0;
+            }
+
+            return contrato;
+          });
+
+          setContratos(contratosCorrigidos);
         }
       }
     } catch (error) {
       console.error("Erro ao carregar contratos do localStorage:", error);
+      // Em caso de erro, inicializa com array vazio
+      setContratos([]);
     }
   };
 
@@ -117,18 +137,28 @@ const Contratos = () => {
   const handleNovoContrato = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+
+    // Encontrar o cliente selecionado
+    const clienteId = parseInt(formData.get("cliente"));
+    const clienteSelecionado = clientesAtivos.find((c) => c.id === clienteId);
+
+    // Se cliente não for encontrado, usar objeto com valores padrão
+    const cliente = clienteSelecionado || {
+      id: clienteId || 0,
+      nome: "Cliente não especificado",
+      empresa: "",
+    };
+
     const novoContrato = {
       id: Date.now(),
       numero: formData.get("numeroContrato"),
-      cliente: clientesAtivos.find(
-        (c) => c.id === parseInt(formData.get("cliente"))
-      ),
+      cliente: cliente,
       dataInicio: formData.get("dataInicio"),
       dataTermino: formData.get("dataTermino"),
       status: formData.get("status"),
       condicoesPagamento: formData.get("condicoesPagamento"),
       servicos: servicosSelecionados,
-      valorTotal,
+      valorTotal: valorTotal || 0, // Garantir que sempre seja um número
       termos: formData.get("termos"),
       observacoes: formData.get("observacoes"),
     };
@@ -232,13 +262,19 @@ const Contratos = () => {
           ) : (
             contratos.map((contrato) => (
               <div key={contrato.id} className="table-row">
-                <div>{contrato.numero}</div>
-                <div>{contrato.cliente.nome}</div>
-                <div>{`${contrato.dataInicio} - ${contrato.dataTermino}`}</div>
-                <div>R$ {contrato.valorTotal.toFixed(2)}</div>
+                <div>{contrato.numero || "N/A"}</div>
                 <div>
-                  <span className={`status-badge ${contrato.status}`}>
-                    {contrato.status}
+                  {contrato.cliente?.nome || "Cliente não especificado"}
+                </div>
+                <div>{`${contrato.dataInicio || "N/A"} - ${
+                  contrato.dataTermino || "N/A"
+                }`}</div>
+                <div>R$ {(contrato.valorTotal || 0).toFixed(2)}</div>
+                <div>
+                  <span
+                    className={`status-badge ${contrato.status || "rascunho"}`}
+                  >
+                    {contrato.status || "Rascunho"}
                   </span>
                 </div>
                 <div className="actions">{/* Ações do contrato */}</div>
@@ -263,9 +299,9 @@ const Contratos = () => {
           ) : (
             servicos.map((servico) => (
               <div key={servico.id} className="table-row">
-                <div>{servico.nome}</div>
-                <div>{servico.descricao}</div>
-                <div>R$ {servico.precoBase.toFixed(2)}</div>
+                <div>{servico.nome || "N/A"}</div>
+                <div>{servico.descricao || "Sem descrição"}</div>
+                <div>R$ {(servico.precoBase || 0).toFixed(2)}</div>
                 <div>{servico.recorrente ? "Sim" : "Não"}</div>
                 <div className="actions">{/* Ações do serviço */}</div>
               </div>
@@ -383,22 +419,36 @@ const Contratos = () => {
                   </div>
                   <div className="servicos-selecionados">
                     <h4>Serviços Selecionados</h4>
-                    {servicosSelecionados.map((servico) => (
-                      <div key={servico.id} className="servico-item">
-                        <div>
-                          <strong>{servico.nome}</strong>
-                          <p>R$ {servico.precoBase.toFixed(2)}</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoverServico(servico)}
-                        >
-                          <FaTimes />
-                        </button>
+                    {servicosSelecionados.length === 0 ? (
+                      <p className="no-servicos">
+                        Nenhum serviço selecionado. Adicione um ou mais serviços
+                        abaixo.
+                      </p>
+                    ) : (
+                      <div className="servicos-selecionados-list">
+                        {servicosSelecionados.map((servico) => (
+                          <div
+                            key={servico.id}
+                            className="servico-selecionado-item"
+                          >
+                            <div className="servico-details">
+                              <h5>{servico.nome || "Serviço"}</h5>
+                              <p>{servico.descricao || "Sem descrição"}</p>
+                              <p>R$ {(servico.precoBase || 0).toFixed(2)}</p>
+                            </div>
+                            <button
+                              type="button"
+                              className="btn-remover-servico"
+                              onClick={() => handleRemoverServico(servico)}
+                            >
+                              <FaTimes />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                     <div className="valor-total">
-                      Valor Total: R$ {valorTotal.toFixed(2)}
+                      Valor Total: R$ {(valorTotal || 0).toFixed(2)}
                     </div>
                   </div>
                 </div>
