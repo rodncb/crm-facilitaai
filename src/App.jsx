@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Clientes from "./pages/Clientes";
 import Leads from "./pages/Leads";
@@ -10,20 +16,52 @@ import Agenda from "./pages/Agenda";
 import Propostas from "./pages/Propostas";
 import PropostaCliente from "./pages/PropostaCliente";
 import Configuracoes from "./pages/Configuracoes";
+import Login from "./pages/Login";
 import "./App.css";
+
+// Componente para rotas protegidas
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem("auth_token");
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    // Redirecionar para login se não estiver autenticado
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
+// Componente para rota de login
+const LoginRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem("auth_token");
+
+  if (isAuthenticated) {
+    // Redirecionar para dashboard se já estiver autenticado
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
 
 const App = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // isMobile é usado para ajustes responsivos em toda a aplicação
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
+
+      // Auto-colapsar sidebar em dispositivos móveis
+      if (window.innerWidth <= 768 && !isSidebarCollapsed) {
+        setIsSidebarCollapsed(true);
+      }
     };
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isSidebarCollapsed]);
 
   // Inicialização do LocalStorage para armazenamento de dados
   useEffect(() => {
@@ -69,40 +107,57 @@ const App = () => {
     <Router>
       <div className="app">
         <Routes>
+          {/* Rota de login (pública) */}
+          <Route
+            path="/login"
+            element={
+              <LoginRoute>
+                <Login />
+              </LoginRoute>
+            }
+          />
+
+          {/* Rota pública para cliente visualizar proposta */}
+          <Route path="/proposta/:id" element={<PropostaCliente />} />
+
+          {/* Rotas protegidas (requerem autenticação) */}
           <Route
             path="/*"
             element={
-              <>
-                {/* Mostra a sidebar apenas para rotas que não sejam de clientes */}
-                {!isClientRoute(window.location.pathname) && (
-                  <Sidebar
-                    collapsed={isSidebarCollapsed}
-                    setCollapsed={setIsSidebarCollapsed}
-                    isMobile={isMobile}
-                  />
-                )}
-                <div
-                  className={
-                    isClientRoute(window.location.pathname)
-                      ? "client-view"
-                      : isSidebarCollapsed
-                      ? "content-collapsed"
-                      : "content"
-                  }
-                >
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/clientes" element={<Clientes />} />
-                    <Route path="/leads" element={<Leads />} />
-                    <Route path="/contratos" element={<Contratos />} />
-                    <Route path="/propostas" element={<Propostas />} />
-                    <Route path="/pagamentos" element={<Pagamentos />} />
-                    <Route path="/agenda" element={<Agenda />} />
-                    <Route path="/configuracoes" element={<Configuracoes />} />
-                    <Route path="/proposta/:id" element={<PropostaCliente />} />
-                  </Routes>
-                </div>
-              </>
+              <ProtectedRoute>
+                <>
+                  {/* Mostra a sidebar apenas para rotas que não sejam de clientes */}
+                  {!isClientRoute(window.location.pathname) && (
+                    <Sidebar
+                      collapsed={isSidebarCollapsed}
+                      setCollapsed={setIsSidebarCollapsed}
+                    />
+                  )}
+                  <div
+                    className={
+                      isClientRoute(window.location.pathname)
+                        ? "client-view"
+                        : isSidebarCollapsed
+                        ? "content-collapsed"
+                        : "content"
+                    }
+                  >
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/clientes" element={<Clientes />} />
+                      <Route path="/leads" element={<Leads />} />
+                      <Route path="/contratos" element={<Contratos />} />
+                      <Route path="/propostas" element={<Propostas />} />
+                      <Route path="/pagamentos" element={<Pagamentos />} />
+                      <Route path="/agenda" element={<Agenda />} />
+                      <Route
+                        path="/configuracoes"
+                        element={<Configuracoes />}
+                      />
+                    </Routes>
+                  </div>
+                </>
+              </ProtectedRoute>
             }
           />
         </Routes>

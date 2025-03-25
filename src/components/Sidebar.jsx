@@ -1,103 +1,169 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FaHome,
-  FaUserFriends,
   FaUsers,
+  FaUserTie,
   FaFileContract,
+  FaFileInvoiceDollar,
   FaCalendarAlt,
   FaCog,
-  FaMoneyBillWave,
   FaFileAlt,
-  FaAngleLeft,
-  FaAngleRight,
-  FaEllipsisH,
+  FaBars,
+  FaSignOutAlt,
+  FaUser,
 } from "react-icons/fa";
 import "./Sidebar.css";
 
-const Sidebar = ({ onCollapse }) => {
+const Sidebar = ({ collapsed, setCollapsed }) => {
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileView, setMobileView] = useState(window.innerWidth <= 768);
+  const navigate = useNavigate();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleResize = () => {
-      const isMobile = window.innerWidth <= 768;
-      setMobileView(isMobile);
-
-      // Auto collapse on mobile
-      if (isMobile && !collapsed) {
-        toggleSidebar();
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [collapsed]);
+  // Obter informações do usuário logado
+  const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
+  const userName = userInfo.nome || "Usuário";
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
-    if (onCollapse) {
-      onCollapse(!collapsed);
-    }
   };
 
-  const menuItems = [
-    { path: "/", icon: <FaHome />, text: "Dashboard" },
-    { path: "/leads", icon: <FaUserFriends />, text: "Leads" },
-    { path: "/clientes", icon: <FaUsers />, text: "Clientes" },
-    { path: "/propostas", icon: <FaFileAlt />, text: "Propostas" },
-    { path: "/contratos", icon: <FaFileContract />, text: "Contratos" },
-    { path: "/pagamentos", icon: <FaMoneyBillWave />, text: "Pagamentos" },
-    { path: "/agenda", icon: <FaCalendarAlt />, text: "Agenda" },
-    { path: "/configuracoes", icon: <FaCog />, text: "Configurações" },
-  ];
+  const handleLogout = () => {
+    // Remover token de autenticação
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("user_info");
 
-  const Logo = ({ collapsed }) => (
-    <div className="logo-container">
-      <div className="logo-wrapper">
-        <img src="/images/logo.png" alt="Logo" className="logo-image" />
-        <div className="logo-text">
-          <span className="facilita">Facilita</span>
-          <span className="ai">AI</span>
-          <span className="crm">CRM</span>
-        </div>
-      </div>
-      <button className="toggle-button" onClick={() => toggleSidebar()}>
-        {collapsed ? <FaAngleRight /> : <FaAngleLeft />}
-      </button>
-    </div>
-  );
+    // Redirecionar para a página de login
+    navigate("/login");
+  };
+
+  const toggleUserMenu = () => {
+    setUserMenuOpen(!userMenuOpen);
+  };
 
   return (
-    <>
-      {mobileView && collapsed && (
-        <button className="mobile-toggle-button" onClick={toggleSidebar}>
-          <FaEllipsisH />
+    <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+      <div className="sidebar-header">
+        <Link to="/" className="logo-container">
+          <img
+            src={`${import.meta.env.BASE_URL}images/logo.png`}
+            alt="Logo"
+            className="logo"
+          />
+          {!collapsed && (
+            <span className="logo-text">
+              Facilita<span className="highlight">AI</span> CRM
+            </span>
+          )}
+        </Link>
+        <button className="toggle-btn" onClick={toggleSidebar}>
+          <FaBars />
         </button>
-      )}
-      <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-        <Logo collapsed={collapsed} />
-        <nav className="menu">
-          {menuItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`menu-item ${
-                location.pathname === item.path ? "active" : ""
-              }`}
-              onClick={() => mobileView && setCollapsed(true)}
-            >
-              {item.icon}
-              <span>{item.text}</span>
-            </Link>
-          ))}
-        </nav>
       </div>
-      {!collapsed && mobileView && (
-        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
-      )}
-    </>
+
+      <nav className="sidebar-nav">
+        <ul>
+          <li>
+            <Link to="/" className={location.pathname === "/" ? "active" : ""}>
+              <FaHome className="nav-icon" />
+              {!collapsed && <span>Dashboard</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/leads"
+              className={location.pathname === "/leads" ? "active" : ""}
+            >
+              <FaUsers className="nav-icon" />
+              {!collapsed && <span>Leads</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/clientes"
+              className={location.pathname === "/clientes" ? "active" : ""}
+            >
+              <FaUserTie className="nav-icon" />
+              {!collapsed && <span>Clientes</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/propostas"
+              className={location.pathname === "/propostas" ? "active" : ""}
+            >
+              <FaFileAlt className="nav-icon" />
+              {!collapsed && <span>Propostas</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/contratos"
+              className={location.pathname === "/contratos" ? "active" : ""}
+            >
+              <FaFileContract className="nav-icon" />
+              {!collapsed && <span>Contratos</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/pagamentos"
+              className={location.pathname === "/pagamentos" ? "active" : ""}
+            >
+              <FaFileInvoiceDollar className="nav-icon" />
+              {!collapsed && <span>Pagamentos</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/agenda"
+              className={location.pathname === "/agenda" ? "active" : ""}
+            >
+              <FaCalendarAlt className="nav-icon" />
+              {!collapsed && <span>Agenda</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/configuracoes"
+              className={location.pathname === "/configuracoes" ? "active" : ""}
+            >
+              <FaCog className="nav-icon" />
+              {!collapsed && <span>Configurações</span>}
+            </Link>
+          </li>
+        </ul>
+      </nav>
+
+      <div className="user-section">
+        <div
+          className={`user-info ${collapsed ? "collapsed" : ""}`}
+          onClick={!collapsed ? toggleUserMenu : undefined}
+        >
+          <div className="user-avatar">
+            <FaUser />
+          </div>
+          {!collapsed && (
+            <>
+              <div className="user-details">
+                <div className="user-name">{userName}</div>
+                <div className="user-role">Administrador</div>
+              </div>
+              <div className={`user-dropdown ${userMenuOpen ? "open" : ""}`}>
+                <button onClick={handleLogout} className="logout-button">
+                  <FaSignOutAlt /> Sair
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+        {collapsed && (
+          <button onClick={handleLogout} className="logout-button-collapsed">
+            <FaSignOutAlt />
+          </button>
+        )}
+      </div>
+    </div>
   );
 };
 
