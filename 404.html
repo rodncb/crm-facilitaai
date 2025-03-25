@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FacilitaAI - Redirecionando...</title>
+    <script type="text/javascript">
+      // Redirecionamento para aplicação SPA no GitHub Pages
+      const segments = window.location.pathname.split("/");
+      let path = "";
+      let redirectURL = "";
+
+      // Verificar se é uma rota de proposta
+      if (segments.includes("proposta")) {
+        const propostaIndex = segments.indexOf("proposta");
+        if (propostaIndex >= 0 && segments.length > propostaIndex + 1) {
+          // Capturar o id da proposta
+          const propostaId = segments[propostaIndex + 1];
+          // Redirecionar para a rota correta no crm-facilitaai
+          redirectURL = "/crm-facilitaai/#/proposta/" + propostaId;
+          window.location.replace(redirectURL);
+        } else {
+          // Redirecionar para a aplicação principal
+          window.location.replace("/crm-facilitaai/");
+        }
+      } else {
+        // Outros casos: redirecionar para a aplicação principal
+        // Código para Single Page Apps no GitHub Pages
+        var pathSegmentsToKeep = 1;
+
+        var l = window.location;
+        l.replace(
+          l.protocol +
+            "//" +
+            l.hostname +
+            (l.port ? ":" + l.port : "") +
+            l.pathname
+              .split("/")
+              .slice(0, pathSegmentsToKeep + 1)
+              .join("/") +
+            "/?/" +
+            l.pathname
+              .slice(1)
+              .split("/")
+              .slice(pathSegmentsToKeep)
+              .join("/")
+              .replace(/&/g, "~and~") +
+            (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+            l.hash
+        );
+      }
+    </script>
+  </head>
+  <body>
+    <div
+      style="text-align: center; padding: 40px; font-family: Arial, sans-serif"
+    >
+      <h1>Redirecionando...</h1>
+      <p>
+        Se você não for redirecionado automaticamente,
+        <a href="/crm-facilitaai/">clique aqui</a>.
+      </p>
+    </div>
+  </body>
+</html>
