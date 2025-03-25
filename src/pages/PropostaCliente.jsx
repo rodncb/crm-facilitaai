@@ -18,92 +18,113 @@ const PropostaCliente = () => {
   const [isDrawing, setIsDrawing] = useState(false);
 
   useEffect(() => {
-    // Simulando busca da proposta pelo ID
-    // Em uma implementação real, você faria uma chamada API
-    setTimeout(() => {
-      try {
-        // Verificar se a proposta já foi aprovada
-        const propostas = JSON.parse(localStorage.getItem("propostas") || "[]");
-        const propostaExistente = propostas.find(
-          (p) => p.numero === `PROP-${id}`
-        );
+    setLoading(true);
 
-        if (propostaExistente && propostaExistente.status === "aprovada") {
-          setError("Esta proposta já foi aprovada anteriormente.");
+    // Extrair o ID da proposta da URL
+    const propostaId = id;
+    console.log("ID da proposta recebido:", propostaId);
+
+    // Função para carregar dados da proposta
+    const carregarProposta = async () => {
+      // Simulando o carregamento de dados da proposta
+      setTimeout(() => {
+        try {
+          // Verificar se a proposta já foi aprovada
+          const propostas = JSON.parse(
+            localStorage.getItem("propostas") || "[]"
+          );
+          console.log("Todas as propostas:", propostas);
+
+          // Procurar proposta pelo ID ou código
+          let propostaEncontrada = propostas.find(
+            (p) => p.numero === `PROP-${propostaId}`
+          );
+
+          // Tentar match alternativo se não encontrou
+          if (!propostaEncontrada) {
+            propostaEncontrada = propostas.find((p) =>
+              p.numero
+                .replace(/[^a-zA-Z0-9]/g, "")
+                .toLowerCase()
+                .includes(propostaId.toLowerCase())
+            );
+          }
+
+          // Se ainda não encontrou, verificar pelo ID da URL diretamente
+          if (!propostaEncontrada) {
+            propostaEncontrada = propostas.find(
+              (p) => p.numero.toLowerCase() === propostaId.toLowerCase()
+            );
+          }
+
+          console.log("Proposta encontrada:", propostaEncontrada);
+
+          if (propostaEncontrada) {
+            // Verificar se já foi aprovada
+            if (propostaEncontrada.status === "aprovada") {
+              setError("Esta proposta já foi aprovada anteriormente.");
+              setLoading(false);
+              return;
+            }
+
+            setProposta(propostaEncontrada);
+            setLoading(false);
+          } else {
+            // Se não encontrou a proposta, use dados mockados para demonstração
+            // (Este é um fallback apenas para demonstração - Em produção deveria retornar erro 404)
+            console.log(
+              "Proposta não encontrada, usando dados de demonstração"
+            );
+
+            // Simular uma proposta mock para demonstração
+            const propostaDemo = {
+              id: "2023-003",
+              numero: `PROP-${propostaId}`,
+              origem: "cliente",
+              cliente: "Cliente Demonstração",
+              clienteId: 2,
+              data: "2023-06-15",
+              validade: "2023-07-15",
+              valorTotal: 12500.0,
+              status: "pendente",
+              contratoGerado: false,
+              itens: [
+                {
+                  id: 1,
+                  descricao: "Serviço de demonstração 1",
+                  quantidade: 1,
+                  valorUnitario: 8500.0,
+                },
+                {
+                  id: 2,
+                  descricao: "Serviço de demonstração 2",
+                  quantidade: 1,
+                  valorUnitario: 2000.0,
+                },
+                {
+                  id: 3,
+                  descricao: "Serviço mensal",
+                  quantidade: 2,
+                  valorUnitario: 1000.0,
+                },
+              ],
+              observacoes:
+                "Esta é uma proposta de demonstração para fins de teste.",
+              condicoesEntrega: "Entrega em 30 dias após aprovação.",
+            };
+
+            setProposta(propostaDemo);
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error("Erro ao processar proposta:", error);
+          setError("Erro ao carregar a proposta. Por favor, tente novamente.");
           setLoading(false);
-          return;
         }
+      }, 1500);
+    };
 
-        // Extrair o código da proposta do ID da URL
-        // O formato agora é "nomecliente000064" (exemplo)
-
-        // Simular uma proposta mock - ajustado para Carlos
-        const propostaEncontrada = {
-          id: "2023-003",
-          numero: "PROP-2023-003",
-          origem: "cliente",
-          cliente: "Carlos Mendes - Startup XYZ",
-          clienteId: 2,
-          data: "2023-06-15",
-          validade: "2023-07-15",
-          valorTotal: 12500.0,
-          status: "pendente",
-          contratoGerado: false,
-          itens: [
-            {
-              id: 1,
-              descricao: "Design e desenvolvimento de aplicativo mobile",
-              quantidade: 1,
-              valorUnitario: 8500.0,
-            },
-            {
-              id: 2,
-              descricao: "Integração com APIs",
-              quantidade: 1,
-              valorUnitario: 2000.0,
-            },
-            {
-              id: 3,
-              descricao: "Suporte mensal",
-              quantidade: 2,
-              valorUnitario: 1000.0,
-            },
-          ],
-          observacoes:
-            "Desenvolvimento de aplicativo mobile com backend escalável e APIs de integração.",
-          condicoesEntrega:
-            "Implementação em até 60 dias úteis após aprovação.",
-          empresa: {
-            nome: "Facilita AI",
-            endereco: "Praça Antonio Calado, 85 - Barra da Tijuca",
-            cidade: "Rio de Janeiro",
-            estado: "RJ",
-            cep: "22793-084",
-            cnpj: "28.894.664/0001-60",
-          },
-          cliente_info: {
-            nome: "Carlos Mendes",
-            empresa: "Startup XYZ",
-            cargo: "CEO",
-            cnpj: "23.456.789/0001-12",
-            endereco: "Avenida Paulista, 1578 - Bela Vista",
-            cidade: "São Paulo",
-            estado: "SP",
-            cep: "01310-200",
-            telefone: "(11) 97654-3210",
-            email: "carlos@startupxyz.com",
-          },
-        };
-
-        setProposta(propostaEncontrada);
-        setLoading(false);
-      } catch {
-        setError(
-          "Erro ao carregar proposta. Verifique o link ou tente novamente."
-        );
-        setLoading(false);
-      }
-    }, 1000);
+    carregarProposta();
   }, [id]);
 
   // Inicializar o canvas quando o modal for aberto

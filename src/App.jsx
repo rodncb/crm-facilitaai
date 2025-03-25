@@ -120,6 +120,12 @@ const App = () => {
           {/* Rota pública para cliente visualizar proposta */}
           <Route path="/proposta/:id" element={<PropostaCliente />} />
 
+          {/* Rota alternativa para compatibilidade com GitHub Pages */}
+          <Route
+            path="/crm-facilitaai/proposta/:id"
+            element={<PropostaCliente />}
+          />
+
           {/* Rotas protegidas (requerem autenticação) */}
           <Route
             path="/*"
