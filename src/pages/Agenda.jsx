@@ -28,27 +28,124 @@ const Agenda = () => {
 
   // Função para carregar os eventos (simulados e reais)
   const carregarEventos = () => {
-    let proximoId = 1;
+    try {
+      let proximoId = 1;
+      let todosEventos = [];
 
-    // Adicionar a proposta real do Marco
-    const propostaMarco = {
-      id: proximoId++,
-      tipo: "proposta",
-      titulo: "Validade de proposta",
-      descricao: "PROP-2025-004 - Marco (Startup XYZ)",
-      data: "2025-03-26", // Data de validade da proposta (corrigida para 26/03/2025)
-      status: "pendente",
-      link: "/propostas",
-      icone: <FaFileSignature />,
-      isReal: true, // Flag para identificar dados reais
-    };
+      // 1. Carregar propostas reais
+      const propostasStr = localStorage.getItem("propostas");
+      if (propostasStr) {
+        const propostas = JSON.parse(propostasStr);
+        if (Array.isArray(propostas) && propostas.length > 0) {
+          const eventosPropostas = propostas.map((proposta) => ({
+            id: proximoId++,
+            tipo: "proposta",
+            titulo: "Validade de proposta",
+            descricao: `${proposta.numero} - ${proposta.cliente.nome} (${proposta.cliente.empresa})`,
+            data: proposta.dataValidade,
+            status:
+              proposta.status === "aprovada"
+                ? "concluido"
+                : proposta.status === "recusada"
+                ? "atrasado"
+                : "pendente",
+            link: "/propostas",
+            icone: <FaFileSignature />,
+            isReal: true,
+          }));
+          todosEventos = todosEventos.concat(eventosPropostas);
+        }
+      }
 
-    // Apenas incluir o evento real
-    const todosEventos = [propostaMarco];
+      // 2. Carregar pagamentos reais
+      const pagamentosStr = localStorage.getItem("pagamentos");
+      if (pagamentosStr) {
+        const pagamentos = JSON.parse(pagamentosStr);
+        if (Array.isArray(pagamentos) && pagamentos.length > 0) {
+          const eventosPagamentos = pagamentos.map((pagamento) => ({
+            id: proximoId++,
+            tipo: "pagamento",
+            titulo: "Pagamento de contrato",
+            descricao: pagamento.contrato,
+            data: pagamento.dataVencimento,
+            status:
+              pagamento.status === "pago"
+                ? "concluido"
+                : new Date(pagamento.dataVencimento) < new Date()
+                ? "atrasado"
+                : "pendente",
+            valor: pagamento.valor,
+            link: "/pagamentos",
+            icone: <FaFileInvoiceDollar />,
+            isReal: true,
+          }));
+          todosEventos = todosEventos.concat(eventosPagamentos);
+        }
+      }
 
-    // Definir estado com eventos
-    setEventos(todosEventos);
-    setEventosFiltrados(todosEventos);
+      // 3. Carregar reuniões agendadas (se houver)
+      const agendamentosStr = localStorage.getItem("agendamentos");
+      if (agendamentosStr) {
+        const agendamentos = JSON.parse(agendamentosStr);
+        if (Array.isArray(agendamentos) && agendamentos.length > 0) {
+          const eventosReuniao = agendamentos.map((agendamento) => ({
+            id: proximoId++,
+            tipo: "reuniao",
+            titulo:
+              agendamento.tipo === "lead"
+                ? "Follow-up com lead"
+                : "Reunião com cliente",
+            descricao: `${agendamento.contato} - ${agendamento.empresa}`,
+            data: agendamento.data,
+            hora: agendamento.hora,
+            status:
+              new Date(`${agendamento.data}T${agendamento.hora}`) < new Date()
+                ? "atrasado"
+                : "pendente",
+            link: agendamento.tipo === "lead" ? "/leads" : "/clientes",
+            icone: <FaUserFriends />,
+            isReal: true,
+          }));
+          todosEventos = todosEventos.concat(eventosReuniao);
+        }
+      }
+
+      // Se não houver nenhum evento real, adicionar a proposta do Marco como exemplo
+      if (todosEventos.length === 0) {
+        const propostaMarco = {
+          id: proximoId++,
+          tipo: "proposta",
+          titulo: "Validade de proposta",
+          descricao: "PROP-2025-004 - Marco (Startup XYZ)",
+          data: "2025-03-26",
+          status: "pendente",
+          link: "/propostas",
+          icone: <FaFileSignature />,
+          isReal: true,
+        };
+        todosEventos.push(propostaMarco);
+      }
+
+      // Definir estado com eventos
+      setEventos(todosEventos);
+      setEventosFiltrados(todosEventos);
+    } catch (error) {
+      console.error("Erro ao carregar eventos:", error);
+      // Em caso de erro, use apenas a proposta do Marco
+      const propostaMarco = {
+        id: 1,
+        tipo: "proposta",
+        titulo: "Validade de proposta",
+        descricao: "PROP-2025-004 - Marco (Startup XYZ)",
+        data: "2025-03-26",
+        status: "pendente",
+        link: "/propostas",
+        icone: <FaFileSignature />,
+        isReal: true,
+      };
+      setEventos([propostaMarco]);
+      setEventosFiltrados([propostaMarco]);
+    }
   };
 
   const formatarData = (dataStr) => {

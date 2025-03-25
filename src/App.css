@@ -56,9 +56,9 @@ body {
 
 /* Estilos para a visão de cliente (sem sidebar) */
 .client-view {
-  margin-left: 0;
-  width: 100%;
-  max-width: 100%;
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
   transition: margin 0.3s ease;
 }
 
@@ -70,7 +70,7 @@ body {
     padding-top: 15px;
   }
 
-  .content.sidebar-collapsed {
+  .content-collapsed {
     margin-left: 0;
     width: 100%;
   }
@@ -102,8 +102,8 @@ body {
   }
 
   .client-view {
-    margin-left: 0;
-    padding-left: 0;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
   }
 }
 

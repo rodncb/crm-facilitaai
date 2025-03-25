@@ -145,7 +145,14 @@ const Clientes = () => {
 
   const handleDeleteCliente = (clienteId) => {
     if (window.confirm("Tem certeza que deseja excluir este cliente?")) {
-      setClientes(clientes.filter((cliente) => cliente.id !== clienteId));
+      // Remover o cliente do estado
+      const clientesAtualizados = clientes.filter(
+        (cliente) => cliente.id !== clienteId
+      );
+      setClientes(clientesAtualizados);
+
+      // Salvar imediatamente no localStorage para garantir persistência
+      localStorage.setItem("clientes", JSON.stringify(clientesAtualizados));
     }
   };
 
