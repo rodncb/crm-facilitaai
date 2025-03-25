@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FaHome,
+  FaUserFriends,
   FaUsers,
-  FaUserTie,
   FaFileContract,
-  FaFileInvoiceDollar,
+  FaMoneyBillWave,
   FaCalendarAlt,
   FaCog,
   FaFileAlt,
-  FaBars,
+  FaAngleLeft,
+  FaAngleRight,
+  FaEllipsisH,
   FaSignOutAlt,
   FaUser,
 } from "react-icons/fa";
@@ -18,11 +20,26 @@ import "./Sidebar.css";
 const Sidebar = ({ collapsed, setCollapsed }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [mobileView, setMobileView] = useState(window.innerWidth <= 768);
 
   // Obter informações do usuário logado
   const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
   const userName = userInfo.nome || "Usuário";
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth <= 768;
+      setMobileView(isMobile);
+
+      // Auto collapse on mobile
+      if (isMobile && !collapsed) {
+        toggleSidebar();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [collapsed]);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -37,133 +54,79 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     navigate("/login");
   };
 
-  const toggleUserMenu = () => {
-    setUserMenuOpen(!userMenuOpen);
-  };
+  const menuItems = [
+    { path: "/", icon: <FaHome />, text: "Dashboard" },
+    { path: "/leads", icon: <FaUserFriends />, text: "Leads" },
+    { path: "/clientes", icon: <FaUsers />, text: "Clientes" },
+    { path: "/propostas", icon: <FaFileAlt />, text: "Propostas" },
+    { path: "/contratos", icon: <FaFileContract />, text: "Contratos" },
+    { path: "/pagamentos", icon: <FaMoneyBillWave />, text: "Pagamentos" },
+    { path: "/agenda", icon: <FaCalendarAlt />, text: "Agenda" },
+    { path: "/configuracoes", icon: <FaCog />, text: "Configurações" },
+  ];
 
   return (
-    <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-      <div className="sidebar-header">
-        <Link to="/" className="logo-container">
-          <img
-            src={`${import.meta.env.BASE_URL}images/logo.png`}
-            alt="Logo"
-            className="logo"
-          />
-          {!collapsed && (
-            <span className="logo-text">
-              Facilita<span className="highlight">AI</span> CRM
-            </span>
-          )}
-        </Link>
-        <button className="toggle-btn" onClick={toggleSidebar}>
-          <FaBars />
+    <>
+      {mobileView && collapsed && (
+        <button className="mobile-toggle-button" onClick={toggleSidebar}>
+          <FaEllipsisH />
         </button>
-      </div>
-
-      <nav className="sidebar-nav">
-        <ul>
-          <li>
-            <Link to="/" className={location.pathname === "/" ? "active" : ""}>
-              <FaHome className="nav-icon" />
-              {!collapsed && <span>Dashboard</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/leads"
-              className={location.pathname === "/leads" ? "active" : ""}
-            >
-              <FaUsers className="nav-icon" />
-              {!collapsed && <span>Leads</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/clientes"
-              className={location.pathname === "/clientes" ? "active" : ""}
-            >
-              <FaUserTie className="nav-icon" />
-              {!collapsed && <span>Clientes</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/propostas"
-              className={location.pathname === "/propostas" ? "active" : ""}
-            >
-              <FaFileAlt className="nav-icon" />
-              {!collapsed && <span>Propostas</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/contratos"
-              className={location.pathname === "/contratos" ? "active" : ""}
-            >
-              <FaFileContract className="nav-icon" />
-              {!collapsed && <span>Contratos</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/pagamentos"
-              className={location.pathname === "/pagamentos" ? "active" : ""}
-            >
-              <FaFileInvoiceDollar className="nav-icon" />
-              {!collapsed && <span>Pagamentos</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/agenda"
-              className={location.pathname === "/agenda" ? "active" : ""}
-            >
-              <FaCalendarAlt className="nav-icon" />
-              {!collapsed && <span>Agenda</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/configuracoes"
-              className={location.pathname === "/configuracoes" ? "active" : ""}
-            >
-              <FaCog className="nav-icon" />
-              {!collapsed && <span>Configurações</span>}
-            </Link>
-          </li>
-        </ul>
-      </nav>
-
-      <div className="user-section">
-        <div
-          className={`user-info ${collapsed ? "collapsed" : ""}`}
-          onClick={!collapsed ? toggleUserMenu : undefined}
-        >
-          <div className="user-avatar">
-            <FaUser />
+      )}
+      <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+        <div className="logo-container">
+          <div className="logo-wrapper">
+            <img
+              src={`${import.meta.env.BASE_URL}images/logo.png`}
+              alt="Logo"
+              className="logo-image"
+            />
+            <div className="logo-text">
+              <span className="facilita">Facilita</span>
+              <span className="ai">AI</span>
+              <span className="crm">CRM</span>
+            </div>
           </div>
-          {!collapsed && (
-            <>
-              <div className="user-details">
-                <div className="user-name">{userName}</div>
-                <div className="user-role">Administrador</div>
-              </div>
-              <div className={`user-dropdown ${userMenuOpen ? "open" : ""}`}>
-                <button onClick={handleLogout} className="logout-button">
-                  <FaSignOutAlt /> Sair
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-        {collapsed && (
-          <button onClick={handleLogout} className="logout-button-collapsed">
-            <FaSignOutAlt />
+          <button className="toggle-button" onClick={() => toggleSidebar()}>
+            {collapsed ? <FaAngleRight /> : <FaAngleLeft />}
           </button>
-        )}
+        </div>
+
+        <nav className="menu">
+          {menuItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`menu-item ${
+                location.pathname === item.path ? "active" : ""
+              }`}
+              onClick={() => mobileView && setCollapsed(true)}
+            >
+              {item.icon}
+              <span>{item.text}</span>
+            </Link>
+          ))}
+        </nav>
+
+        <div className="admin-section">
+          <div className="user-info">
+            <div className="user-avatar">
+              <FaUser />
+            </div>
+            <div className="user-details">
+              <div className="user-name">{userName}</div>
+              <div className="user-role">Administrador</div>
+            </div>
+          </div>
+          <button onClick={handleLogout} className="logout-menu-item">
+            <FaSignOutAlt />
+            <span>Sair</span>
+          </button>
+        </div>
       </div>
-    </div>
+      {!collapsed && mobileView && (
+        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
+      )}
+    </>
   );
 };
 
