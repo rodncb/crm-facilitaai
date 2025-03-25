@@ -154,6 +154,9 @@ const App = () => {
                         path="/configuracoes"
                         element={<Configuracoes />}
                       />
+
+                      {/* Redirecionar qualquer outra rota não conhecida para o Dashboard */}
+                      <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </div>
                 </>

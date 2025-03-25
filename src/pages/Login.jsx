@@ -64,7 +64,7 @@ const Login = () => {
         adminUser.lastLogin = new Date().toISOString();
         localStorage.setItem("adminUser", JSON.stringify(adminUser));
 
-        // Redirecionar para o dashboard
+        // Redirecionar para o dashboard explicitamente
         navigate("/");
       } else {
         // Login falhou
