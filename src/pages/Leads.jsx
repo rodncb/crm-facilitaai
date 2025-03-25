@@ -19,6 +19,18 @@ const Leads = () => {
   const [leads, setLeads] = useState([
     {
       id: 1,
+      nome: "Marco Fernandes",
+      empresa: "Iron House",
+      cargo: "Diretor",
+      email: "marco@ironhouse.com.br",
+      telefone: "(21) 98765-4321",
+      status: "qualificado",
+      origem: "Site",
+      dataCriacao: "19/03/2025",
+      proximoFollowup: "2025-03-27",
+    },
+    {
+      id: 2,
       nome: "Leandro Marques",
       empresa: "Anahata Home",
       cargo: "Diretor",
@@ -30,7 +42,7 @@ const Leads = () => {
       proximoFollowup: "2025-03-28",
     },
     {
-      id: 2,
+      id: 3,
       nome: "João Silva",
       empresa: "TechCorp",
       cargo: "Gerente de TI",
@@ -42,7 +54,7 @@ const Leads = () => {
       proximoFollowup: "2025-03-31",
     },
     {
-      id: 3,
+      id: 4,
       nome: "Maria Santos",
       empresa: "Inovação Ltda",
       cargo: "CEO",

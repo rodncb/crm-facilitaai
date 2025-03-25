@@ -83,57 +83,38 @@ const Agenda = () => {
         }
       }
 
-      // 3. Carregar reuniões agendadas (se houver)
-      const agendamentosStr = localStorage.getItem("agendamentos");
-      if (agendamentosStr) {
-        const agendamentos = JSON.parse(agendamentosStr);
-        if (Array.isArray(agendamentos) && agendamentos.length > 0) {
-          const eventosReuniao = agendamentos.map((agendamento) => ({
-            id: proximoId++,
-            tipo: "reuniao",
-            titulo:
-              agendamento.tipo === "lead"
-                ? "Follow-up com lead"
-                : "Reunião com cliente",
-            descricao: `${agendamento.contato} - ${agendamento.empresa}`,
-            data: agendamento.data,
-            hora: agendamento.hora,
-            status:
-              new Date(`${agendamento.data}T${agendamento.hora}`) < new Date()
-                ? "atrasado"
-                : "pendente",
-            link: agendamento.tipo === "lead" ? "/leads" : "/clientes",
-            icone: <FaUserFriends />,
-            isReal: true,
-          }));
-          todosEventos = todosEventos.concat(eventosReuniao);
+      // 3. Verificar leads para follow-up
+      const leadsStr = localStorage.getItem("leads");
+      if (leadsStr) {
+        const leads = JSON.parse(leadsStr);
+        if (Array.isArray(leads) && leads.length > 0) {
+          // Encontrar Marco Fernandes ou outro lead qualificado
+          const lead =
+            leads.find(
+              (l) => l.nome === "Marco Fernandes" && l.empresa === "Iron House"
+            ) || leads.find((l) => l.status === "qualificado");
+
+          if (lead) {
+            const eventoLead = {
+              id: proximoId++,
+              tipo: "reuniao",
+              titulo: "Follow-up com lead",
+              descricao: `${lead.nome} - ${lead.empresa}`,
+              data: lead.proximoFollowup || "2025-03-27",
+              hora: "10:00",
+              status: "pendente",
+              link: "/leads",
+              icone: <FaUserFriends />,
+              isReal: true,
+            };
+            todosEventos.push(eventoLead);
+          }
         }
       }
 
-      // Se não houver nenhum evento real, adicionar a proposta do Marco como exemplo
-      if (todosEventos.length === 0) {
-        const propostaMarco = {
-          id: proximoId++,
-          tipo: "proposta",
-          titulo: "Validade de proposta",
-          descricao: "PROP-2025-004 - Marco (Startup XYZ)",
-          data: "2025-03-26",
-          status: "pendente",
-          link: "/propostas",
-          icone: <FaFileSignature />,
-          isReal: true,
-        };
-        todosEventos.push(propostaMarco);
-      }
-
-      // Definir estado com eventos
-      setEventos(todosEventos);
-      setEventosFiltrados(todosEventos);
-    } catch (error) {
-      console.error("Erro ao carregar eventos:", error);
-      // Em caso de erro, use apenas a proposta do Marco
+      // 4. Adicionar a proposta de exemplo do Marco (Startup XYZ) para demonstração
       const propostaMarco = {
-        id: 1,
+        id: proximoId++,
         tipo: "proposta",
         titulo: "Validade de proposta",
         descricao: "PROP-2025-004 - Marco (Startup XYZ)",
@@ -141,10 +122,47 @@ const Agenda = () => {
         status: "pendente",
         link: "/propostas",
         icone: <FaFileSignature />,
+        isDemo: true, // Marcado como demonstração, não como dado real
+      };
+      todosEventos.push(propostaMarco);
+
+      // Definir estado com eventos
+      setEventos(todosEventos);
+      setEventosFiltrados(todosEventos);
+    } catch (error) {
+      console.error("Erro ao carregar eventos:", error);
+      // Em caso de erro, use dados de exemplo
+      const proximoId = 1;
+
+      // Lead de Marco Fernandes
+      const leadMarco = {
+        id: proximoId,
+        tipo: "reuniao",
+        titulo: "Follow-up com lead",
+        descricao: "Marco Fernandes - Iron House",
+        data: "2025-03-27",
+        hora: "10:00",
+        status: "pendente",
+        link: "/leads",
+        icone: <FaUserFriends />,
         isReal: true,
       };
-      setEventos([propostaMarco]);
-      setEventosFiltrados([propostaMarco]);
+
+      // Proposta de exemplo do Marco (Startup XYZ)
+      const propostaMarco = {
+        id: proximoId + 1,
+        tipo: "proposta",
+        titulo: "Validade de proposta",
+        descricao: "PROP-2025-004 - Marco (Startup XYZ)",
+        data: "2025-03-26",
+        status: "pendente",
+        link: "/propostas",
+        icone: <FaFileSignature />,
+        isDemo: true,
+      };
+
+      setEventos([leadMarco, propostaMarco]);
+      setEventosFiltrados([leadMarco, propostaMarco]);
     }
   };
 
