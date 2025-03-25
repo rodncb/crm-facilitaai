@@ -5,6 +5,8 @@ import {
   FaFileInvoiceDollar,
   FaUserFriends,
   FaFilter,
+  FaFileContract,
+  FaFileSignature,
 } from "react-icons/fa";
 import "./Agenda.css";
 
@@ -16,120 +18,182 @@ const Agenda = () => {
   const [anoSelecionado, setAnoSelecionado] = useState(
     new Date().getFullYear()
   );
+  const [termoBusca, setTermoBusca] = useState("");
 
-  // Simula dados de várias partes do sistema
+  // Carregar dados reais do sistema
   useEffect(() => {
-    // Dados fictícios para demonstração
-    const mockEventos = [
-      // Eventos de pagamento
+    carregarEventos();
+  }, []);
+
+  // Função para carregar eventos de todas as fontes
+  const carregarEventos = () => {
+    try {
+      // Iniciar com array vazio
+      let todosEventos = [];
+      let proximoId = 1;
+
+      // 1. Carregar pagamentos
+      const pagamentos = JSON.parse(localStorage.getItem("pagamentos") || "[]");
+      const eventosPagamentos = pagamentos.map((pagamento) => ({
+        id: proximoId++,
+        tipo: "pagamento",
+        titulo: "Pagamento de contrato",
+        descricao: `${pagamento.contrato} - ${pagamento.cliente}`,
+        data: pagamento.dataVencimento,
+        status:
+          pagamento.status === "pago"
+            ? "concluido"
+            : pagamento.status === "atrasado"
+            ? "atrasado"
+            : "pendente",
+        valorAssociado: pagamento.valor.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+        link: "/pagamentos",
+        icone: <FaFileInvoiceDollar />,
+      }));
+      todosEventos = todosEventos.concat(eventosPagamentos);
+
+      // 2. Carregar leads com próximo followup
+      const leads = JSON.parse(localStorage.getItem("leads") || "[]");
+      const eventosLeads = leads
+        .filter((lead) => lead.proximoFollowup) // Verificar se tem data de followup
+        .map((lead) => ({
+          id: proximoId++,
+          tipo: "reuniao",
+          titulo: "Follow-up com lead",
+          descricao: `${lead.nome} - ${lead.empresa}`,
+          data: lead.proximoFollowup,
+          hora: "10:00", // Hora fictícia, já que não temos horário nos dados
+          status: verificarStatusEvento(lead.proximoFollowup),
+          link: "/leads",
+          icone: <FaUserFriends />,
+        }));
+      todosEventos = todosEventos.concat(eventosLeads);
+
+      // 3. Carregar propostas com data de validade
+      const propostas = JSON.parse(localStorage.getItem("propostas") || "[]");
+      const eventosPropostas = propostas.map((proposta) => ({
+        id: proximoId++,
+        tipo: "proposta",
+        titulo: "Validade de proposta",
+        descricao: `${proposta.numero} - ${proposta.cliente}`,
+        data: proposta.validade,
+        status: verificarStatusEvento(proposta.validade, proposta.status),
+        link: "/propostas",
+        icone: <FaFileSignature />,
+      }));
+      todosEventos = todosEventos.concat(eventosPropostas);
+
+      // 4. Carregar contratos se existirem
+      const contratos = JSON.parse(localStorage.getItem("contratos") || "[]");
+      const eventosContratos = contratos
+        .filter((contrato) => contrato.dataTermino) // Verificar se tem data de término
+        .map((contrato) => ({
+          id: proximoId++,
+          tipo: "contrato",
+          titulo: "Vencimento de contrato",
+          descricao: `${contrato.numero} - ${
+            contrato.nome || contrato.cliente
+          }`,
+          data: contrato.dataTermino,
+          status: verificarStatusEvento(contrato.dataTermino),
+          link: "/contratos",
+          icone: <FaFileContract />,
+        }));
+      todosEventos = todosEventos.concat(eventosContratos);
+
+      // Se não tiver eventos, e estivermos em ambiente de desenvolvimento, usar dados de exemplo
+      if (todosEventos.length === 0) {
+        console.log("Nenhum evento encontrado, usando dados de exemplo");
+        todosEventos = gerarEventosExemplo();
+      }
+
+      setEventos(todosEventos);
+    } catch (error) {
+      console.error("Erro ao carregar eventos:", error);
+      // Em caso de erro, usar dados de exemplo
+      setEventos(gerarEventosExemplo());
+    }
+  };
+
+  // Verificar status do evento baseado na data
+  const verificarStatusEvento = (dataStr, statusOriginal = null) => {
+    // Se já tiver um status definido como "concluído" ou "aprovado", manter
+    if (statusOriginal === "aprovada" || statusOriginal === "pago") {
+      return "concluido";
+    }
+
+    // Se já tiver status definido como "recusada", manter como "atrasado"
+    if (statusOriginal === "recusada") {
+      return "atrasado";
+    }
+
+    const hoje = new Date();
+    const data = new Date(dataStr);
+
+    // Se a data for anterior a hoje, está atrasado
+    if (data < hoje) {
+      return "atrasado";
+    }
+
+    // Se for dentro dos próximos 7 dias, é pendente
+    const seteDiasDepois = new Date(hoje);
+    seteDiasDepois.setDate(hoje.getDate() + 7);
+
+    if (data <= seteDiasDepois) {
+      return "pendente";
+    }
+
+    // Se for mais que 7 dias no futuro, também é pendente (mas poderia ser outro status)
+    return "pendente";
+  };
+
+  // Função para gerar eventos de exemplo como fallback
+  const gerarEventosExemplo = () => {
+    const dataAtual = new Date();
+    const ano = dataAtual.getFullYear();
+    const mes = dataAtual.getMonth();
+
+    return [
       {
         id: 1,
         tipo: "pagamento",
         titulo: "Pagamento de contrato",
         descricao: "CONT-230401-123 - João Silva (TechCorp)",
-        data: "2023-06-15",
-        status: "concluido",
+        data: `${ano}-${String(mes + 1).padStart(2, "0")}-15`,
+        status: "pendente",
         valorAssociado: "R$ 1.500,00",
         link: "/pagamentos",
         icone: <FaFileInvoiceDollar />,
       },
       {
         id: 2,
-        tipo: "pagamento",
-        titulo: "Pagamento de contrato",
-        descricao: "CONT-230401-123 - João Silva (TechCorp)",
-        data: "2023-07-15",
-        status: "pendente",
-        valorAssociado: "R$ 1.500,00",
-        link: "/pagamentos",
-        icone: <FaFileInvoiceDollar />,
-      },
-      {
-        id: 3,
-        tipo: "pagamento",
-        titulo: "Pagamento de contrato",
-        descricao: "CONT-230402-456 - Maria Santos (Inovação Ltda)",
-        data: "2023-05-30",
-        status: "atrasado",
-        valorAssociado: "R$ 3.000,00",
-        link: "/pagamentos",
-        icone: <FaFileInvoiceDollar />,
-      },
-      {
-        id: 4,
-        tipo: "pagamento",
-        titulo: "Pagamento de contrato",
-        descricao: "CONT-230403-789 - Pedro Oliveira (ConsultaTech)",
-        data: "2023-08-10",
-        status: "pendente",
-        valorAssociado: "R$ 2.500,00",
-        link: "/pagamentos",
-        icone: <FaFileInvoiceDollar />,
-      },
-
-      // Eventos de reunião com leads/clientes
-      {
-        id: 5,
-        tipo: "reuniao",
-        titulo: "Reunião com cliente",
-        descricao: "João Silva - TechCorp",
-        data: "2023-06-20",
-        hora: "14:30",
-        status: "pendente",
-        link: "/clientes",
-        icone: <FaUserFriends />,
-      },
-      {
-        id: 6,
-        tipo: "reuniao",
-        titulo: "Apresentação para lead",
-        descricao: "Carlos Mendes - Startup XYZ",
-        data: "2023-06-18",
-        hora: "10:00",
-        status: "pendente",
-        link: "/leads",
-        icone: <FaUserFriends />,
-      },
-      {
-        id: 7,
         tipo: "reuniao",
         titulo: "Follow-up com cliente",
         descricao: "Maria Santos - Inovação Ltda",
-        data: "2023-06-10",
+        data: `${ano}-${String(mes + 1).padStart(2, "0")}-20`,
         hora: "15:45",
-        status: "concluido",
+        status: "pendente",
         link: "/clientes",
         icone: <FaUserFriends />,
       },
-
-      // Eventos de vencimento de contrato
       {
-        id: 8,
+        id: 3,
         tipo: "contrato",
         titulo: "Vencimento de contrato",
         descricao: "CONT-230401-123 - João Silva (TechCorp)",
-        data: "2023-09-30",
+        data: `${ano}-${String(mes + 2).padStart(2, "0")}-10`,
         status: "pendente",
         link: "/contratos",
-        icone: <FaCalendarAlt />,
-      },
-      {
-        id: 9,
-        tipo: "contrato",
-        titulo: "Renovação de contrato",
-        descricao: "CONT-230402-456 - Maria Santos (Inovação Ltda)",
-        data: "2023-07-25",
-        status: "pendente",
-        link: "/contratos",
-        icone: <FaCalendarAlt />,
+        icone: <FaFileContract />,
       },
     ];
+  };
 
-    setEventos(mockEventos);
-  }, []);
-
-  // Formatar data para exibição
   const formatarData = (dataStr) => {
+    if (!dataStr) return "";
     const data = new Date(dataStr);
     return data.toLocaleDateString("pt-BR", {
       day: "2-digit",
@@ -138,7 +202,6 @@ const Agenda = () => {
     });
   };
 
-  // Gerar classe CSS baseada no status
   const getStatusClass = (status) => {
     switch (status) {
       case "concluido":
@@ -152,12 +215,18 @@ const Agenda = () => {
     }
   };
 
-  // Filtrar eventos por tipo
+  // Filtrar eventos por tipo e termo de busca
   const eventosFiltrados = eventos.filter((evento) => {
-    if (filtroTipo === "todos") {
-      return true;
-    }
-    return evento.tipo === filtroTipo;
+    // Filtrar por tipo
+    const matchTipo = filtroTipo === "todos" || evento.tipo === filtroTipo;
+
+    // Filtrar por termo de busca
+    const matchBusca =
+      termoBusca === "" ||
+      evento.titulo.toLowerCase().includes(termoBusca.toLowerCase()) ||
+      evento.descricao.toLowerCase().includes(termoBusca.toLowerCase());
+
+    return matchTipo && matchBusca;
   });
 
   // Ordenar eventos por data
@@ -215,13 +284,14 @@ const Agenda = () => {
           <div className="calendar-day-number">{dia}</div>
           {eventosNoDia.length > 0 && (
             <div className="calendar-day-events">
-              {eventosNoDia.map((evento) => (
+              {eventosNoDia.slice(0, 2).map((evento) => (
                 <div
                   key={`event-${evento.id}`}
                   className={`calendar-event ${getStatusClass(evento.status)}`}
                   title={`${evento.titulo}: ${evento.descricao}`}
                 >
                   <span className="event-icon">{evento.icone}</span>
+                  <span className="event-title">{evento.tipo}</span>
                 </div>
               ))}
               {eventosNoDia.length > 2 && (
@@ -282,6 +352,8 @@ const Agenda = () => {
             type="text"
             placeholder="Buscar eventos..."
             className="search-input"
+            value={termoBusca}
+            onChange={(e) => setTermoBusca(e.target.value)}
           />
         </div>
         <div className="filtro-tipo">
@@ -294,6 +366,7 @@ const Agenda = () => {
             <option value="pagamento">Pagamentos</option>
             <option value="reuniao">Reuniões</option>
             <option value="contrato">Contratos</option>
+            <option value="proposta">Propostas</option>
           </select>
         </div>
       </div>
@@ -303,7 +376,7 @@ const Agenda = () => {
           {eventosOrdenados.length === 0 ? (
             <div className="empty-state">
               Nenhum evento encontrado. Crie novos eventos nos módulos de
-              Pagamentos, Contratos ou Leads.
+              Pagamentos, Contratos, Propostas ou Leads.
             </div>
           ) : (
             eventosOrdenados.map((evento) => (

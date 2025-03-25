@@ -66,6 +66,13 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3a416f;
+  box-shadow: 0 0 0 2px rgba(58, 65, 111, 0.1);
 }
 
 .filtro-tipo {
@@ -214,6 +221,7 @@
   border-radius: 10px;
   color: #777;
   font-style: italic;
+  line-height: 1.5;
 }
 
 /* Estilos para a visualização em calendário */
@@ -287,6 +295,11 @@
   background-color: #fff;
   padding: 5px;
   position: relative;
+  transition: background-color 0.2s;
+}
+
+.calendar-day:hover {
+  background-color: #f8f9fa;
 }
 
 .calendar-day.empty {
@@ -317,6 +330,10 @@
 
 .calendar-day.has-events {
   cursor: pointer;
+}
+
+.calendar-day.has-events:hover {
+  background-color: #f5f5f5;
 }
 
 .calendar-day-events {
@@ -354,11 +371,43 @@
   font-size: 10px;
 }
 
+.event-title {
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%;
+}
+
+.calendar-event[title*="Pagamento"] {
+  background-color: #e3f2fd;
+  border-left: 3px solid #2196f3;
+}
+
+.calendar-event[title*="Follow-up"],
+.calendar-event[title*="Reunião"] {
+  background-color: #e8f5e9;
+  border-left: 3px solid #4caf50;
+}
+
+.calendar-event[title*="Vencimento"] {
+  background-color: #fff8e1;
+  border-left: 3px solid #ffc107;
+}
+
+.calendar-event[title*="Validade de proposta"] {
+  background-color: #ede7f6;
+  border-left: 3px solid #9c27b0;
+}
+
 .more-events {
   font-size: 11px;
   color: #888;
   text-align: center;
   padding: 2px;
+  background-color: #f5f5f5;
+  border-radius: 3px;
+  margin-top: 2px;
 }
 
 /* Responsividade */
@@ -384,6 +433,11 @@
 
   .calendar-day {
     min-height: 60px;
+    padding: 3px;
+  }
+
+  .event-title {
+    display: none;
   }
 
   .evento-header {
@@ -403,6 +457,11 @@
   .evento-status {
     padding: 10px 15px;
     justify-content: flex-end;
+  }
+
+  .calendar-day-events {
+    margin-top: 2px;
+    gap: 2px;
   }
 }
 
