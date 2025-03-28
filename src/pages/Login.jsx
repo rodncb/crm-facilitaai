@@ -25,7 +25,6 @@ const Login = () => {
       };
 
       localStorage.setItem("adminUser", JSON.stringify(adminUser));
-      console.log("Usuário administrador criado com sucesso!");
     }
 
     // Adicionar um segundo administrador
@@ -44,9 +43,6 @@ const Login = () => {
       };
 
       localStorage.setItem("adminTales", JSON.stringify(talesUser));
-      console.log("Usuário administrador Tales criado com sucesso!");
-      console.log("Email: talesrocha@facilitaai.com.br");
-      console.log("Senha: " + senhaSegura);
 
       // Armazenar a senha em um local visível para recuperação
       localStorage.setItem("senhaTemporariaTales", senhaSegura);
@@ -55,8 +51,6 @@ const Login = () => {
       const talesUser = JSON.parse(adminTales);
       talesUser.password = "123456";
       localStorage.setItem("adminTales", JSON.stringify(talesUser));
-      console.log("Email do Tales: talesrocha@facilitaai.com.br");
-      console.log("Senha do Tales: 123456");
     }
 
     // Verificar se o usuário já está logado

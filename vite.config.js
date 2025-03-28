@@ -24,14 +24,12 @@ export default defineConfig(({ mode }) => {
 
             if (fs.existsSync(source)) {
               fs.copyFileSync(source, target);
-              console.log("✓ 404.html copiado para a pasta dist");
+              // Arquivo copiado com sucesso
             } else {
-              console.error(
-                "Arquivo 404.html não encontrado na raiz do projeto"
-              );
+              // Arquivo não encontrado
             }
           } catch (err) {
-            console.error("Erro ao copiar 404.html:", err);
+            // Erro ao copiar arquivo
           }
         },
       },

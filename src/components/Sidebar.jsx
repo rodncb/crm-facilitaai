@@ -46,10 +46,6 @@ const Sidebar = () => {
 
   // Exibir no console para debug
   useEffect(() => {
-    console.log("Informações do usuário:", userInfoObj);
-    console.log("Nome do usuário:", userName);
-    console.log("Tipo do usuário:", userRole);
-
     // Se auth_token existir, mas userInfo não, criar um userInfo básico
     const authToken = localStorage.getItem("auth_token");
     if (authToken && !userInfoObj) {
@@ -65,7 +61,6 @@ const Sidebar = () => {
             role: adminUser.role || "admin",
           })
         );
-        console.log("Usuário padrão criado:", adminUser.nome);
       } else if (adminTales.email) {
         localStorage.setItem(
           "userInfo",
@@ -75,7 +70,6 @@ const Sidebar = () => {
             role: adminTales.role || "admin",
           })
         );
-        console.log("Usuário padrão criado:", adminTales.nome);
       }
     }
   }, [userInfoObj]);

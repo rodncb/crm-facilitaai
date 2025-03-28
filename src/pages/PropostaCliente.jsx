@@ -22,14 +22,12 @@ const PropostaCliente = () => {
 
     // Extrair o ID da proposta da URL
     const propostaId = id;
-    console.log("ID da proposta recebido:", propostaId);
 
     // Função para carregar dados da proposta
     const carregarProposta = async () => {
       try {
         // Verificar se a proposta já foi aprovada
         const propostas = JSON.parse(localStorage.getItem("propostas") || "[]");
-        console.log("Todas as propostas:", propostas);
 
         // Procurar proposta pelo ID ou código
         let propostaEncontrada = propostas.find(
@@ -59,8 +57,6 @@ const PropostaCliente = () => {
             );
           });
         }
-
-        console.log("Proposta encontrada:", propostaEncontrada);
 
         let propostaProcessada = null;
 
@@ -117,8 +113,6 @@ const PropostaCliente = () => {
           setLoading(false);
         } else {
           // Se não encontrou a proposta, use dados mockados para demonstração
-          console.log("Proposta não encontrada, usando dados de demonstração");
-
           // Simular uma proposta mock para demonstração
           const propostaDemo = {
             id: "demo-001",
@@ -200,7 +194,6 @@ const PropostaCliente = () => {
   const handlePrint = () => {
     // Verificar se há referência válida
     if (!previewRef || !previewRef.current) {
-      console.error("Referência do preview não encontrada");
       alert("Erro ao preparar a impressão. Tente novamente.");
       return;
     }
@@ -401,7 +394,6 @@ const PropostaCliente = () => {
     setTimeout(() => {
       try {
         // Em uma implementação real, você enviaria a assinatura e a ação para uma API
-        console.log(`Proposta ${id} ${action}`);
 
         // Obter propostas do localStorage
         const propostas = JSON.parse(localStorage.getItem("propostas") || "[]");
@@ -413,7 +405,6 @@ const PropostaCliente = () => {
           // Se foi aceita, salvar a assinatura e atualizar o status
           if (action === "aceitar" && canvasRef.current) {
             const assinaturaDataURL = canvasRef.current.toDataURL("image/png");
-            console.log("Assinatura:", assinaturaDataURL);
 
             // Salvar a assinatura no localStorage (temporário até implementar backend)
             const assinaturas = JSON.parse(
