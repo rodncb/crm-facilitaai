@@ -254,6 +254,20 @@
 }
 
 /* Media queries */
+@media (min-width: 769px) {
+  .sidebar.collapsed {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+  }
+
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    max-width: 240px;
+  }
+}
+
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(0);

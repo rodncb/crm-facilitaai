@@ -63,17 +63,29 @@ body {
   position: relative;
 }
 
-.content.sidebar-collapsed {
-  margin-left: 60px;
-  width: calc(100% - 60px);
-}
-
 /* Estilos para a visão de cliente (sem sidebar) */
 .client-view {
   margin-left: 0 !important;
   width: 100% !important;
   max-width: 100% !important;
   transition: margin 0.3s ease;
+}
+
+/* Estilos específicos para desktop e tablet */
+@media (min-width: 769px) {
+  .content {
+    flex-grow: 1;
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    transition: margin-left 0.3s ease, width 0.3s ease;
+  }
+
+  .content-collapsed {
+    flex-grow: 1;
+    margin-left: 60px;
+    width: calc(100% - 60px);
+    transition: margin-left 0.3s ease, width 0.3s ease;
+  }
 }
 
 /* Garantir que o conteúdo ocupe toda a largura quando não há sidebar */
