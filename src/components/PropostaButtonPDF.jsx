@@ -21,9 +21,18 @@ const PropostaButtonPDF = ({ proposta, contentRef }) => {
       const fileName = formatPropostaFileName(proposta);
 
       // Gera e faz download do PDF
-      await generatePDF(contentRef.current, fileName);
+      const pdfBytes = await generatePDF(contentRef.current, fileName);
 
-      console.log("PDF gerado com sucesso");
+      const fileURL = URL.createObjectURL(pdfBytes);
+
+      // Criar um link para download e clicá-lo programaticamente
+      const a = document.createElement("a");
+      a.href = fileURL;
+      a.download = fileName;
+      a.click();
+
+      // Liberar o objeto URL após o uso
+      URL.revokeObjectURL(fileURL);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
       alert("Erro ao gerar o PDF. Por favor, tente novamente.");

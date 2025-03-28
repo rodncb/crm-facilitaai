@@ -22,48 +22,23 @@ const Pagamentos = () => {
 
   // Carregar contratos do localStorage ao iniciar
   useEffect(() => {
-    const contratosSalvos = localStorage.getItem("contratos");
-    if (contratosSalvos) {
-      try {
-        const contratosData = JSON.parse(contratosSalvos);
-        if (
-          contratosData &&
-          Array.isArray(contratosData) &&
-          contratosData.length > 0
-        ) {
-          setContratos(contratosData);
-        } else {
-          carregarContratosPadrao();
-        }
-      } catch (error) {
-        console.error("Erro ao carregar contratos do localStorage:", error);
-        carregarContratosPadrao();
+    try {
+      // Carregar contratos do localStorage
+      const contratosArmazenados = localStorage.getItem("contratos");
+      if (contratosArmazenados) {
+        const contratosJSON = JSON.parse(contratosArmazenados);
+        setContratos(contratosJSON);
       }
-    } else {
-      carregarContratosPadrao();
-    }
-  }, []);
 
-  // Carregar pagamentos do localStorage ao iniciar
-  useEffect(() => {
-    const pagamentosSalvos = localStorage.getItem("pagamentos");
-    if (pagamentosSalvos) {
-      try {
-        const pagamentosData = JSON.parse(pagamentosSalvos);
-        if (
-          pagamentosData &&
-          Array.isArray(pagamentosData) &&
-          pagamentosData.length > 0
-        ) {
-          setPagamentos(pagamentosData);
-        } else {
-          carregarPagamentosPadrao();
-        }
-      } catch (error) {
-        console.error("Erro ao carregar pagamentos do localStorage:", error);
-        carregarPagamentosPadrao();
+      // Carregar pagamentos do localStorage
+      const pagamentosArmazenados = localStorage.getItem("pagamentos");
+      if (pagamentosArmazenados) {
+        const pagamentosJSON = JSON.parse(pagamentosArmazenados);
+        setPagamentos(pagamentosJSON);
       }
-    } else {
+    } catch (error) {
+      console.error("Erro ao carregar dados do localStorage:", error);
+      carregarContratosPadrao();
       carregarPagamentosPadrao();
     }
   }, []);
@@ -73,7 +48,6 @@ const Pagamentos = () => {
     if (contratos.length > 0) {
       try {
         localStorage.setItem("contratos", JSON.stringify(contratos));
-        console.log("Contratos salvos no localStorage:", contratos);
       } catch (error) {
         console.error("Erro ao salvar contratos no localStorage:", error);
       }
@@ -85,7 +59,6 @@ const Pagamentos = () => {
     if (pagamentos.length > 0) {
       try {
         localStorage.setItem("pagamentos", JSON.stringify(pagamentos));
-        console.log("Pagamentos salvos no localStorage:", pagamentos);
       } catch (error) {
         console.error("Erro ao salvar pagamentos no localStorage:", error);
       }
