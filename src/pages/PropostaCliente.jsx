@@ -306,8 +306,10 @@ const PropostaCliente = () => {
               // Substituir caminhos de imagem antes de imprimir
               const images = document.querySelectorAll('img');
               images.forEach(img => {
-                if (img.src.includes('/images/logo.png')) {
-                  img.src = '${window.location.origin}/crm-facilitaai/images/logo.png';
+                if (img.src.includes('images/logo.png')) {
+                  img.src = '${window.location.origin}${
+      import.meta.env.BASE_URL
+    }images/logo.png';
                 }
               });
               
@@ -552,7 +554,10 @@ const PropostaCliente = () => {
           <div className="proposta-preview">
             <div className="proposta-header">
               <div className="proposta-logo">
-                <img src="./images/logo.png" alt="Logo Facilita AI" />
+                <img
+                  src={`${import.meta.env.BASE_URL}images/logo.png`}
+                  alt="Logo Facilita AI"
+                />
               </div>
               <div className="proposta-info">
                 <h1>Proposta Comercial</h1>
