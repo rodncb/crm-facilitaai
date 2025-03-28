@@ -12,6 +12,7 @@ const Contratos = () => {
   const [valorTotal, setValorTotal] = useState(0);
   const [clientesAtivos, setClientesAtivos] = useState([]);
   const [contratoTemporario, setContratoTemporario] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Carregar dados iniciais do localStorage
   useEffect(() => {
@@ -219,6 +220,23 @@ const Contratos = () => {
     setValorTotal(valorTotal - servico.precoBase);
   };
 
+  // Filtrar contratos de acordo com o termo de busca
+  const filteredContratos = contratos.filter((contrato) => {
+    if (searchTerm.trim() === "") return true;
+
+    const searchTermLower = searchTerm.toLowerCase();
+    return (
+      (contrato.numero &&
+        contrato.numero.toLowerCase().includes(searchTermLower)) ||
+      (contrato.cliente?.nome &&
+        contrato.cliente.nome.toLowerCase().includes(searchTermLower)) ||
+      (contrato.titulo &&
+        contrato.titulo.toLowerCase().includes(searchTermLower)) ||
+      (contrato.descricao &&
+        contrato.descricao.toLowerCase().includes(searchTermLower))
+    );
+  });
+
   return (
     <div className="contratos-container">
       <div className="contratos-header">
@@ -239,6 +257,8 @@ const Contratos = () => {
             type="text"
             placeholder="Buscar contratos..."
             className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -252,13 +272,13 @@ const Contratos = () => {
           <div>Status</div>
           <div>Ações</div>
         </div>
-        {contratos.length === 0 ? (
+        {filteredContratos.length === 0 ? (
           <div className="empty-state">
             Nenhum contrato encontrado. Crie um novo contrato clicando no botão
             acima.
           </div>
         ) : (
-          contratos.map((contrato) => (
+          filteredContratos.map((contrato) => (
             <div key={contrato.id} className="table-row">
               <div>{contrato.numero || "N/A"}</div>
               <div>{contrato.cliente?.nome || "Cliente não especificado"}</div>

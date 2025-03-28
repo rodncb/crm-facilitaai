@@ -17,6 +17,8 @@ const Pagamentos = () => {
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [contratos, setContratos] = useState([]);
   const [pagamentos, setPagamentos] = useState([]);
+  const [showNovoPagamento, setShowNovoPagamento] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Carregar contratos do localStorage ao iniciar
   useEffect(() => {
@@ -278,6 +280,21 @@ const Pagamentos = () => {
     );
   };
 
+  // Filtrar pagamentos de acordo com o termo de busca
+  const filteredPagamentos = pagamentos.filter((pagamento) => {
+    if (searchTerm.trim() === "") return true;
+
+    const searchTermLower = searchTerm.toLowerCase();
+    return (
+      (pagamento.cliente &&
+        pagamento.cliente.toLowerCase().includes(searchTermLower)) ||
+      (pagamento.referencia &&
+        pagamento.referencia.toLowerCase().includes(searchTermLower)) ||
+      (pagamento.descricao &&
+        pagamento.descricao.toLowerCase().includes(searchTermLower))
+    );
+  });
+
   return (
     <div className="pagamentos-container">
       <div className="pagamentos-header">
@@ -298,6 +315,8 @@ const Pagamentos = () => {
             type="text"
             placeholder="Buscar pagamentos..."
             className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="filtro-status">

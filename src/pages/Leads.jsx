@@ -67,6 +67,9 @@ const Leads = () => {
     },
   ]);
 
+  const [showDetails, setShowDetails] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Carregar leads do localStorage ao iniciar
   useEffect(() => {
     const leadsSalvos = localStorage.getItem("leads");
@@ -187,7 +190,16 @@ const Leads = () => {
     { id: "espera", title: "Em Espera (90 dias)" },
   ];
 
-  const filteredLeads = leads.filter((lead) => lead.status !== "espera");
+  const filteredLeads = leads.filter((lead) => {
+    if (searchTerm.trim() === "") return true;
+
+    const searchTermLower = searchTerm.toLowerCase();
+    return (
+      (lead.nome && lead.nome.toLowerCase().includes(searchTermLower)) ||
+      (lead.empresa && lead.empresa.toLowerCase().includes(searchTermLower)) ||
+      (lead.email && lead.email.toLowerCase().includes(searchTermLower))
+    );
+  });
 
   return (
     <div className="leads-container">
@@ -206,6 +218,8 @@ const Leads = () => {
             type="text"
             placeholder="Buscar leads..."
             className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="view-toggle">
@@ -238,7 +252,7 @@ const Leads = () => {
               <div>Ações</div>
               <div>Próximo Followup</div>
             </div>
-            {leads.map((lead) => (
+            {filteredLeads.map((lead) => (
               <div key={lead.id} className="table-row">
                 <div className="nome-column">
                   <span className="lead-name">{lead.nome}</span>

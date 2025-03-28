@@ -8,6 +8,8 @@ const Clientes = () => {
   const [editingCliente, setEditingCliente] = useState(null);
   const [tipoCliente, setTipoCliente] = useState("empresa");
   const [clientes, setClientes] = useState([]);
+  const [currentCliente, setCurrentCliente] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Carregar clientes do localStorage ao iniciar
   useEffect(() => {
@@ -208,6 +210,22 @@ const Clientes = () => {
     setTipoCliente(e.target.value);
   };
 
+  // Filtrar clientes de acordo com o termo de busca
+  const filteredClientes = clientes.filter((cliente) => {
+    if (searchTerm.trim() === "") return true;
+
+    const searchTermLower = searchTerm.toLowerCase();
+    return (
+      (cliente.nome && cliente.nome.toLowerCase().includes(searchTermLower)) ||
+      (cliente.empresa &&
+        cliente.empresa.toLowerCase().includes(searchTermLower)) ||
+      (cliente.email &&
+        cliente.email.toLowerCase().includes(searchTermLower)) ||
+      (cliente.telefone && cliente.telefone.includes(searchTerm)) ||
+      (cliente.documento && cliente.documento.includes(searchTerm))
+    );
+  });
+
   return (
     <div className="clientes-container">
       <div className="clientes-header">
@@ -228,6 +246,8 @@ const Clientes = () => {
             type="text"
             placeholder="Buscar clientes..."
             className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -243,7 +263,7 @@ const Clientes = () => {
           <div>Ações</div>
         </div>
 
-        {clientes.map((cliente) => (
+        {filteredClientes.map((cliente) => (
           <div key={cliente.id} className="table-row hover-effect">
             <div className="nome-column">
               <span className="cliente-name">{cliente.nome}</span>

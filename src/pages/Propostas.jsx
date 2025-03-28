@@ -28,6 +28,8 @@ const Propostas = () => {
   const [showShareLink, setShowShareLink] = useState(false);
   const [currentShareUrl, setCurrentShareUrl] = useState("");
   const [linkCopiado, setLinkCopiado] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("todos");
 
   const previewRef = useRef();
 
@@ -680,6 +682,31 @@ const Propostas = () => {
     );
   };
 
+  // Filtrar propostas de acordo com o termo de busca e status
+  const filteredPropostas = propostas.filter((proposta) => {
+    // Filtrar por status
+    if (statusFilter !== "todos" && proposta.status !== statusFilter) {
+      return false;
+    }
+
+    // Filtrar por termo de busca
+    if (searchTerm.trim() === "") return true;
+
+    const searchTermLower = searchTerm.toLowerCase();
+    return (
+      (proposta.cliente_info?.nome &&
+        proposta.cliente_info.nome.toLowerCase().includes(searchTermLower)) ||
+      (proposta.cliente_info?.empresa &&
+        proposta.cliente_info.empresa
+          .toLowerCase()
+          .includes(searchTermLower)) ||
+      (proposta.titulo &&
+        proposta.titulo.toLowerCase().includes(searchTermLower)) ||
+      (proposta.codigo &&
+        proposta.codigo.toLowerCase().includes(searchTermLower))
+    );
+  });
+
   return (
     <div className="propostas-container">
       <div className="propostas-header">
@@ -697,10 +724,15 @@ const Propostas = () => {
             type="text"
             placeholder="Buscar propostas..."
             className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="filtro-status">
-          <select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
             <option value="todos">Todos os status</option>
             <option value="pendente">Pendentes</option>
             <option value="aprovada">Aprovadas</option>
@@ -720,13 +752,13 @@ const Propostas = () => {
           <div>Ações</div>
         </div>
 
-        {propostas.length === 0 ? (
+        {filteredPropostas.length === 0 ? (
           <div className="empty-state">
             Nenhuma proposta encontrada. Crie uma nova proposta clicando no
             botão acima.
           </div>
         ) : (
-          propostas.map((proposta) => (
+          filteredPropostas.map((proposta) => (
             <div key={proposta.id} className="table-row">
               <div>{proposta.numero}</div>
               <div>{proposta.cliente}</div>
