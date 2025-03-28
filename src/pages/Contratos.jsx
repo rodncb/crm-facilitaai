@@ -11,21 +11,47 @@ const Contratos = () => {
   const [servicosSelecionados, setServicosSelecionados] = useState([]);
   const [valorTotal, setValorTotal] = useState(0);
   const [clientesAtivos, setClientesAtivos] = useState([]);
+  const [contratoTemporario, setContratoTemporario] = useState(null);
 
   // Carregar dados iniciais do localStorage
   useEffect(() => {
     carregarContratosLocalStorage();
     carregarServicosLocalStorage();
     carregarClientesLocalStorage();
+
+    // Verificar se existe dados temporários de proposta para contrato
+    const contratoTemp = localStorage.getItem("contratoTemporario");
+    if (contratoTemp) {
+      try {
+        const dadosContrato = JSON.parse(contratoTemp);
+        setContratoTemporario(dadosContrato);
+
+        // Preencher serviços com base nos itens da proposta
+        if (
+          dadosContrato.servicosContrato &&
+          Array.isArray(dadosContrato.servicosContrato)
+        ) {
+          setServicosSelecionados(dadosContrato.servicosContrato);
+          setValorTotal(dadosContrato.valorTotal || 0);
+        }
+
+        // Abrir modal de novo contrato automaticamente
+        setShowNovoContrato(true);
+
+        // Limpar dados temporários após uso
+        localStorage.removeItem("contratoTemporario");
+      } catch (error) {
+        localStorage.removeItem("contratoTemporario");
+      }
+    }
   }, []);
 
   // Salvar contratos no localStorage sempre que a lista mudar
   useEffect(() => {
     try {
       localStorage.setItem("contratos", JSON.stringify(contratos));
-      console.log("Contratos salvos no localStorage:", contratos);
     } catch (error) {
-      console.error("Erro ao salvar contratos no localStorage:", error);
+      // Erro ao salvar contratos no localStorage
     }
   }, [contratos]);
 
@@ -33,9 +59,8 @@ const Contratos = () => {
   useEffect(() => {
     try {
       localStorage.setItem("servicos", JSON.stringify(servicos));
-      console.log("Serviços salvos no localStorage:", servicos);
     } catch (error) {
-      console.error("Erro ao salvar serviços no localStorage:", error);
+      // Erro ao salvar serviços no localStorage
     }
   }, [servicos]);
 
@@ -72,7 +97,6 @@ const Contratos = () => {
         }
       }
     } catch (error) {
-      console.error("Erro ao carregar contratos do localStorage:", error);
       // Em caso de erro, inicializa com array vazio
       setContratos([]);
     }
@@ -93,7 +117,7 @@ const Contratos = () => {
         }
       }
     } catch (error) {
-      console.error("Erro ao carregar serviços do localStorage:", error);
+      // Erro ao carregar serviços
     }
   };
 
@@ -120,7 +144,6 @@ const Contratos = () => {
         carregarClientesPadrao();
       }
     } catch (error) {
-      console.error("Erro ao carregar clientes do localStorage:", error);
       carregarClientesPadrao();
     }
   };
@@ -199,116 +222,62 @@ const Contratos = () => {
   return (
     <div className="contratos-container">
       <div className="contratos-header">
-        <h1>Contratos e Serviços</h1>
-        <div className="header-buttons">
-          <button
-            className="btn-novo-servico"
-            onClick={() => setShowNovoServico(true)}
-          >
-            <FaPlus /> Novo Serviço
-          </button>
-          <button
-            className="btn-novo-contrato"
-            onClick={() => setShowNovoContrato(true)}
-          >
-            <FaPlus /> Novo Contrato
-          </button>
-        </div>
-      </div>
-
-      <div className="contratos-tabs">
+        <h1>Contratos</h1>
         <button
-          className={`tab ${activeTab === "contratos" ? "active" : ""}`}
-          onClick={() => setActiveTab("contratos")}
+          className="btn-novo-contrato btn-primary"
+          onClick={() => setShowNovoContrato(true)}
         >
-          Contratos
-        </button>
-        <button
-          className={`tab ${activeTab === "servicos" ? "active" : ""}`}
-          onClick={() => setActiveTab("servicos")}
-        >
-          Serviços
+          <span>+</span>
+          Novo Contrato
         </button>
       </div>
 
-      <div className="search-container">
-        <FaSearch className="search-icon" />
-        <input
-          type="text"
-          placeholder={
-            activeTab === "contratos"
-              ? "Buscar contratos..."
-              : "Buscar serviços..."
-          }
-          className="search-input"
-        />
+      <div className="contratos-actions">
+        <div className="search-container">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar contratos..."
+            className="search-input"
+          />
+        </div>
       </div>
 
-      {activeTab === "contratos" ? (
-        <div className="contratos-table">
-          <div className="table-header">
-            <div>Número</div>
-            <div>Cliente</div>
-            <div>Período</div>
-            <div>Valor</div>
-            <div>Status</div>
-            <div>Ações</div>
-          </div>
-          {contratos.length === 0 ? (
-            <div className="empty-state">
-              Nenhum contrato encontrado. Crie um novo contrato clicando no
-              botão acima.
-            </div>
-          ) : (
-            contratos.map((contrato) => (
-              <div key={contrato.id} className="table-row">
-                <div>{contrato.numero || "N/A"}</div>
-                <div>
-                  {contrato.cliente?.nome || "Cliente não especificado"}
-                </div>
-                <div>{`${contrato.dataInicio || "N/A"} - ${
-                  contrato.dataTermino || "N/A"
-                }`}</div>
-                <div>R$ {(contrato.valorTotal || 0).toFixed(2)}</div>
-                <div>
-                  <span
-                    className={`status-badge ${contrato.status || "rascunho"}`}
-                  >
-                    {contrato.status || "Rascunho"}
-                  </span>
-                </div>
-                <div className="actions">{/* Ações do contrato */}</div>
-              </div>
-            ))
-          )}
+      <div className="contratos-table card-shadow">
+        <div className="table-header">
+          <div>Número</div>
+          <div>Cliente</div>
+          <div>Período</div>
+          <div>Valor</div>
+          <div>Status</div>
+          <div>Ações</div>
         </div>
-      ) : (
-        <div className="servicos-table">
-          <div className="table-header">
-            <div>Nome</div>
-            <div>Descrição</div>
-            <div>Preço Base</div>
-            <div>Recorrente</div>
-            <div>Ações</div>
+        {contratos.length === 0 ? (
+          <div className="empty-state">
+            Nenhum contrato encontrado. Crie um novo contrato clicando no botão
+            acima.
           </div>
-          {servicos.length === 0 ? (
-            <div className="empty-state">
-              Nenhum serviço encontrado. Crie um novo serviço clicando no botão
-              acima.
-            </div>
-          ) : (
-            servicos.map((servico) => (
-              <div key={servico.id} className="table-row">
-                <div>{servico.nome || "N/A"}</div>
-                <div>{servico.descricao || "Sem descrição"}</div>
-                <div>R$ {(servico.precoBase || 0).toFixed(2)}</div>
-                <div>{servico.recorrente ? "Sim" : "Não"}</div>
-                <div className="actions">{/* Ações do serviço */}</div>
+        ) : (
+          contratos.map((contrato) => (
+            <div key={contrato.id} className="table-row">
+              <div>{contrato.numero || "N/A"}</div>
+              <div>{contrato.cliente?.nome || "Cliente não especificado"}</div>
+              <div>{`${contrato.dataInicio || "N/A"} - ${
+                contrato.dataTermino || "N/A"
+              }`}</div>
+              <div>R$ {(contrato.valorTotal || 0).toFixed(2)}</div>
+              <div>
+                <span
+                  className={`status-badge ${contrato.status || "rascunho"}`}
+                >
+                  {contrato.status || "Rascunho"}
+                </span>
               </div>
-            ))
-          )}
-        </div>
-      )}
+              <div className="actions">{/* Ações do contrato */}</div>
+            </div>
+          ))
+        )}
+      </div>
 
       {showNovoContrato && (
         <div className="modal">
@@ -325,7 +294,12 @@ const Contratos = () => {
             <form onSubmit={handleNovoContrato}>
               <div className="form-group">
                 <label htmlFor="cliente">Cliente</label>
-                <select id="cliente" name="cliente" required>
+                <select
+                  id="cliente"
+                  name="cliente"
+                  required
+                  defaultValue={contratoTemporario?.cliente || ""}
+                >
                   <option value="">Selecione um cliente</option>
                   {clientesAtivos.map((cliente) => (
                     <option key={cliente.id} value={cliente.id}>
@@ -460,6 +434,11 @@ const Contratos = () => {
                   name="termos"
                   rows="4"
                   placeholder="Defina os termos e condições do contrato..."
+                  defaultValue={
+                    contratoTemporario?.condicoesEntrega
+                      ? `Proposta de origem: ${contratoTemporario.propostaOrigem}\n${contratoTemporario.condicoesEntrega}`
+                      : ""
+                  }
                   required
                 ></textarea>
               </div>
@@ -470,6 +449,7 @@ const Contratos = () => {
                   name="observacoes"
                   rows="3"
                   placeholder="Observações adicionais..."
+                  defaultValue={contratoTemporario?.observacoes || ""}
                 ></textarea>
               </div>
               <div className="form-actions">

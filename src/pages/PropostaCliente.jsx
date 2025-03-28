@@ -65,13 +65,6 @@ const PropostaCliente = () => {
         let propostaProcessada = null;
 
         if (propostaEncontrada) {
-          // Verificar se já foi aprovada
-          if (propostaEncontrada.status === "aprovada") {
-            setError("Esta proposta já foi aprovada anteriormente.");
-            setLoading(false);
-            return;
-          }
-
           // Preparar informações do cliente se não estiverem presentes
           if (!propostaEncontrada.cliente_info) {
             // Buscar cliente associado
@@ -410,44 +403,55 @@ const PropostaCliente = () => {
         // Em uma implementação real, você enviaria a assinatura e a ação para uma API
         console.log(`Proposta ${id} ${action}`);
 
-        // Se foi aceita, salvar a assinatura e atualizar o status
-        if (action === "aceitar" && canvasRef.current) {
-          const assinaturaDataURL = canvasRef.current.toDataURL("image/png");
-          console.log("Assinatura:", assinaturaDataURL);
+        // Obter propostas do localStorage
+        const propostas = JSON.parse(localStorage.getItem("propostas") || "[]");
+        const propostaIndex = propostas.findIndex(
+          (p) => p.numero === proposta.numero
+        );
 
-          // Salvar a assinatura no localStorage (temporário até implementar backend)
-          const assinaturas = JSON.parse(
-            localStorage.getItem("assinaturas") || "{}"
-          );
-          assinaturas[proposta.numero] = assinaturaDataURL;
-          localStorage.setItem("assinaturas", JSON.stringify(assinaturas));
+        if (propostaIndex !== -1) {
+          // Se foi aceita, salvar a assinatura e atualizar o status
+          if (action === "aceitar" && canvasRef.current) {
+            const assinaturaDataURL = canvasRef.current.toDataURL("image/png");
+            console.log("Assinatura:", assinaturaDataURL);
 
-          // Atualizar o status da proposta no localStorage
-          const propostas = JSON.parse(
-            localStorage.getItem("propostas") || "[]"
-          );
-          const propostaIndex = propostas.findIndex(
-            (p) => p.numero === proposta.numero
-          );
+            // Salvar a assinatura no localStorage (temporário até implementar backend)
+            const assinaturas = JSON.parse(
+              localStorage.getItem("assinaturas") || "{}"
+            );
+            assinaturas[proposta.numero] = assinaturaDataURL;
+            localStorage.setItem("assinaturas", JSON.stringify(assinaturas));
 
-          if (propostaIndex !== -1) {
+            // Atualizar o status da proposta para aprovada
             propostas[propostaIndex] = {
               ...propostas[propostaIndex],
               status: "aprovada",
               dataAprovacao: new Date().toISOString(),
               assinatura: assinaturaDataURL,
             };
-            localStorage.setItem("propostas", JSON.stringify(propostas));
+          } else if (action === "declinar") {
+            // Se a proposta foi recusada, atualizar o status
+            propostas[propostaIndex] = {
+              ...propostas[propostaIndex],
+              status: "recusada",
+              dataRecusa: new Date().toISOString(),
+              motivoRecusa: "Recusado pelo cliente",
+            };
           }
+
+          // Salvar as alterações no localStorage
+          localStorage.setItem("propostas", JSON.stringify(propostas));
         }
 
         setSucesso(true);
 
         // Redirecionar após 3 segundos
         setTimeout(() => {
-          // Em um cenário real, você redirecionaria para uma página de agradecimento
-          window.location.href = "/agradecimento";
-        }, 3000);
+          // Em produção, redirecionar para a página inicial do projeto
+          const basePath =
+            import.meta.env.MODE === "production" ? "/crm-facilitaai" : "";
+          window.location.href = `${basePath}/#/agradecimento`;
+        }, 5000); // Aumentar para 5 segundos para dar tempo de ler a mensagem
       } catch (error) {
         console.error("Erro ao finalizar ação:", error);
         alert(
@@ -498,21 +502,25 @@ const PropostaCliente = () => {
             <>
               <h2>Proposta Aceita com Sucesso!</h2>
               <p>
-                Obrigado por aceitar nossa proposta. Entraremos em contato em
-                breve para os próximos passos.
+                Obrigado por aceitar nossa proposta. Sua assinatura foi
+                registrada e o status da proposta foi atualizado para{" "}
+                <strong>APROVADA</strong>.
               </p>
+              <p>Entraremos em contato em breve para os próximos passos.</p>
             </>
           )}
           {acao === "declinar" && (
             <>
               <h2>Proposta Declinada</h2>
               <p>
-                Agradecemos seu tempo. Se tiver algum feedback, entre em contato
-                conosco.
+                Agradecemos seu tempo. Se tiver algum feedback sobre o motivo da
+                recusa, entre em contato conosco.
               </p>
             </>
           )}
-          <p>Redirecionando...</p>
+          <p className="redirect-message">
+            Redirecionando em alguns segundos...
+          </p>
         </div>
       </div>
     );

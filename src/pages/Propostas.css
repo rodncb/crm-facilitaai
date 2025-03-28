@@ -134,26 +134,62 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
   white-space: nowrap;
+  position: relative;
+  min-width: 90px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .status-badge.pendente {
   background-color: #fff8e1;
   color: #ff8f00;
+  border: 1px solid rgba(255, 143, 0, 0.3);
+}
+
+.status-badge.pendente::before {
+  content: "•";
+  margin-right: 5px;
+  font-size: 18px;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .status-badge.aprovada {
   background-color: #e8f5e9;
-  color: #388e3c;
+  color: #2e7d32;
+  border: 1px solid rgba(46, 125, 50, 0.3);
+}
+
+.status-badge.aprovada::before {
+  content: "✓";
+  margin-right: 5px;
+  font-size: 14px;
 }
 
 .status-badge.recusada {
   background-color: #ffebee;
-  color: #d32f2f;
+  color: #c62828;
+  border: 1px solid rgba(198, 40, 40, 0.3);
+}
+
+.status-badge.recusada::before {
+  content: "✕";
+  margin-right: 5px;
+  font-size: 14px;
 }
 
 .actions {

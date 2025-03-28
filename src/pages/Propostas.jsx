@@ -46,7 +46,7 @@ const Propostas = () => {
           setClientes(clientesData);
         }
       } catch (error) {
-        console.error("Erro ao carregar clientes do localStorage:", error);
+        // Erro ao carregar clientes do localStorage
       }
     }
 
@@ -59,8 +59,26 @@ const Propostas = () => {
           setLeads(leadsSalvos);
         }
       } catch (error) {
-        console.error("Erro ao carregar leads do localStorage:", error);
+        // Erro ao carregar leads do localStorage
       }
+    } else {
+      // Se não houver leads, criar o lead Leandro Marques
+      const leadsIniciais = [
+        {
+          id: 3,
+          nome: "Leandro Marques",
+          empresa: "Marques Tecnologia",
+          email: "leandro.marques@marquestec.com.br",
+          telefone: "(21) 99876-5432",
+          origem: "indicação",
+          status: "quente",
+          dataCriacao: "2023-07-01",
+          ultimoContato: "2023-07-03",
+          observacoes: "Interessado em desenvolvimento de aplicativo mobile",
+        },
+      ];
+      localStorage.setItem("leads", JSON.stringify(leadsIniciais));
+      setLeads(leadsIniciais);
     }
 
     // Carregar propostas do localStorage
@@ -137,7 +155,7 @@ const Propostas = () => {
         data: "2023-06-15",
         validade: "2023-06-30",
         valorTotal: 20000.0,
-        status: "pendente",
+        status: "aprovada",
         contratoGerado: false,
         itens: [
           {
@@ -153,6 +171,42 @@ const Propostas = () => {
             valorUnitario: 2000.0,
           },
         ],
+      },
+      {
+        id: 3,
+        numero: "PROP-2023-003",
+        cliente: "Leandro Marques - Marques Tecnologia",
+        clienteId: 3,
+        origem: "lead",
+        data: "2023-07-05",
+        validade: "2023-07-20",
+        valorTotal: 25000.0,
+        status: "pendente",
+        contratoGerado: false,
+        itens: [
+          {
+            id: 1,
+            descricao: "Desenvolvimento de aplicativo mobile",
+            quantidade: 1,
+            valorUnitario: 15000.0,
+          },
+          {
+            id: 2,
+            descricao: "Implantação e treinamento",
+            quantidade: 1,
+            valorUnitario: 5000.0,
+          },
+          {
+            id: 3,
+            descricao: "Manutenção mensal (por 5 meses)",
+            quantidade: 5,
+            valorUnitario: 1000.0,
+          },
+        ],
+        observacoes:
+          "Proposta inclui período de suporte de 5 meses após a entrega do aplicativo. Melhorias e novas funcionalidades serão orçadas separadamente.",
+        condicoesEntrega:
+          "Prazo de entrega: 60 dias após aprovação da proposta. Pagamento em 3 parcelas: 40% na aprovação, 30% na entrega da versão beta, 30% na entrega final.",
       },
     ]);
   };
@@ -231,16 +285,11 @@ const Propostas = () => {
     const pessoaIdStr = formData.get("pessoaId");
     const pessoaId = pessoaIdStr ? parseInt(pessoaIdStr, 10) : 0;
 
-    console.log("Pessoa ID selecionada:", pessoaId, "Tipo:", typeof pessoaId);
-    console.log("Leads disponíveis:", leads);
-
     // Encontrar a pessoa selecionada nos dados
     const pessoaSelecionada =
       origem === "cliente"
         ? clientes.find((c) => c.id === pessoaId)
         : leads.find((l) => l.id === pessoaId);
-
-    console.log("Pessoa selecionada:", pessoaSelecionada);
 
     if (!pessoaSelecionada) {
       alert(
@@ -297,7 +346,37 @@ const Propostas = () => {
         p.id === proposta.id ? { ...p, contratoGerado: true } : p
       )
     );
-    alert(`Contrato gerado com sucesso para a proposta ${proposta.numero}`);
+
+    // Preparar serviços a partir dos itens da proposta
+    const servicosContrato = proposta.itens.map((item) => ({
+      id: Date.now() + item.id,
+      nome: item.descricao,
+      descricao: `${item.quantidade} unidade(s) de ${item.descricao}`,
+      precoBase: item.quantidade * item.valorUnitario,
+      recorrente: false,
+    }));
+
+    // Armazenar dados da proposta para o contrato no localStorage
+    const dadosContrato = {
+      propostaOrigem: proposta.numero,
+      cliente: proposta.clienteId,
+      valorTotal: proposta.valorTotal,
+      servicosContrato: servicosContrato,
+      observacoes: proposta.observacoes || "",
+      condicoesEntrega: proposta.condicoesEntrega || "",
+    };
+
+    localStorage.setItem("contratoTemporario", JSON.stringify(dadosContrato));
+
+    // Redirecionar para a página de contratos
+    window.location.href =
+      import.meta.env.MODE === "production"
+        ? "/crm-facilitaai/#/contratos"
+        : "/#/contratos";
+
+    alert(
+      `Contrato gerado com sucesso para a proposta ${proposta.numero}. Você será redirecionado para a página de contratos.`
+    );
   };
 
   const handleStatusChange = (proposta, novoStatus) => {
@@ -311,7 +390,7 @@ const Propostas = () => {
   const handlePrint = () => {
     // Verificar se há referência válida
     if (!previewRef || !previewRef.current) {
-      console.error("Referência do preview não encontrada");
+      // Referência do preview não encontrada
       alert("Erro ao preparar a impressão. Tente novamente.");
       return;
     }
@@ -407,6 +486,16 @@ const Propostas = () => {
           <script>
             // Imprimir automaticamente e fechar a janela depois
             window.onload = function() {
+              // Substituir caminhos de imagem antes de imprimir
+              const images = document.querySelectorAll('img');
+              images.forEach(img => {
+                if (img.src.includes('images/logo.png')) {
+                  img.src = '${window.location.origin}${
+      import.meta.env.BASE_URL
+    }images/logo.png';
+                }
+              });
+              
               setTimeout(function() {
                 window.print();
                 setTimeout(function() {
@@ -453,9 +542,12 @@ const Propostas = () => {
     // Extrair o número da proposta sem o prefixo
     const numeroSemPrefixo = proposta.numero.replace("PROP-", "");
 
-    // Criar URL amigável
+    // Criar URL amigável usando HashRouter
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/proposta/${clienteNome}${numeroSemPrefixo}`;
+    // Se em produção, incluir o caminho base
+    const basePath =
+      import.meta.env.MODE === "production" ? "/crm-facilitaai" : "";
+    const shareUrl = `${baseUrl}${basePath}/#/proposta/${clienteNome}${numeroSemPrefixo}`;
 
     setCurrentShareUrl(shareUrl);
     setShowShareLink(true);
@@ -492,7 +584,10 @@ const Propostas = () => {
       <div className="proposta-preview" ref={previewRef}>
         <div className="proposta-header">
           <div className="proposta-logo">
-            <img src="/images/logo.png" alt="Logo Facilita AI" />
+            <img
+              src={`${import.meta.env.BASE_URL}images/logo.png`}
+              alt="Logo Facilita AI"
+            />
           </div>
           <div className="proposta-info">
             <h1>Proposta Comercial</h1>
@@ -662,13 +757,15 @@ const Propostas = () => {
                 >
                   <FaShareAlt />
                 </button>
-                <button
-                  className="btn-edit"
-                  title="Editar proposta"
-                  onClick={() => handleEditProposta(proposta)}
-                >
-                  <FaEdit />
-                </button>
+                {proposta.status !== "aprovada" && (
+                  <button
+                    className="btn-edit"
+                    title="Editar proposta"
+                    onClick={() => handleEditProposta(proposta)}
+                  >
+                    <FaEdit />
+                  </button>
+                )}
                 {proposta.status === "pendente" && (
                   <>
                     <button
@@ -696,13 +793,15 @@ const Propostas = () => {
                     <FaFileExport />
                   </button>
                 )}
-                <button
-                  className="btn-delete"
-                  title="Excluir proposta"
-                  onClick={() => handleDeleteProposta(proposta.id)}
-                >
-                  <FaTrash />
-                </button>
+                {proposta.status !== "aprovada" && (
+                  <button
+                    className="btn-delete"
+                    title="Excluir proposta"
+                    onClick={() => handleDeleteProposta(proposta.id)}
+                  >
+                    <FaTrash />
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -778,18 +877,11 @@ const Propostas = () => {
                         Selecione um {origem === "cliente" ? "cliente" : "lead"}
                       </option>
                       {(origem === "cliente" ? clientes : leads).map(
-                        (pessoa) => {
-                          console.log(
-                            `Opção: ${pessoa.nome}, ID: ${
-                              pessoa.id
-                            }, Tipo ID: ${typeof pessoa.id}`
-                          );
-                          return (
-                            <option key={pessoa.id} value={pessoa.id}>
-                              {pessoa.nome} - {pessoa.empresa}
-                            </option>
-                          );
-                        }
+                        (pessoa) => (
+                          <option key={pessoa.id} value={pessoa.id}>
+                            {pessoa.nome} - {pessoa.empresa}
+                          </option>
+                        )
                       )}
                     </select>
                   </div>

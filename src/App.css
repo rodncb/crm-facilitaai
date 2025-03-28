@@ -6,6 +6,18 @@
   --text-dark: #333;
   --text-light: #fff;
   --border-light: #e0e0e0;
+  --primary-color: #4a6cf7;
+  --primary-dark: #3a5bd9;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+  --background-color: #f8f9fa;
+  --text-color: #212529;
+  --border-color: #dee2e6;
 }
 
 * {
@@ -31,6 +43,8 @@ body {
   overflow: hidden;
   background-color: var(--light-gray);
   position: relative;
+  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #333;
 }
 
 .app.mobile-view .content {
@@ -69,6 +83,8 @@ body {
   width: 100% !important;
   max-width: 100% !important;
   transition: margin 0.3s ease;
+  flex: 1;
+  padding: 20px;
 }
 
 /* Estilos específicos para desktop e tablet */
@@ -95,12 +111,16 @@ body {
     width: 100%;
     padding-top: 15px;
     z-index: 1;
+    padding-left: 15px;
+    padding-right: 15px;
   }
 
   .content-collapsed {
     margin-left: 0;
     width: 100%;
-    padding-top: 15px;
+    padding-top: 60px; /* Espaço para o botão do menu */
+    padding-left: 15px;
+    padding-right: 15px;
     z-index: 1;
   }
 
@@ -119,7 +139,20 @@ body {
   .propostas-container,
   .agenda-container,
   .configuracoes-container {
-    padding: 40px 15px 15px 15px !important;
+    padding: 10px !important;
+    margin-top: 40px;
+  }
+
+  /* Ajuste para o menu hamburguer */
+  .dashboard-container h1,
+  .leads-container h1,
+  .clients-container h1,
+  .contratos-container h1,
+  .pagamentos-container h1,
+  .propostas-container h1,
+  .agenda-container h1,
+  .configuracoes-container h1 {
+    margin-left: 40px;
   }
 
   /* Ajustes para tabelas no mobile */
@@ -156,6 +189,10 @@ body {
   .btn {
     padding: 8px 12px !important;
     font-size: 14px !important;
+  }
+
+  .content-collapsed {
+    padding-top: 70px;
   }
 }
 
@@ -228,4 +265,63 @@ body {
 
 .fade-in {
   animation: fadeIn 0.3s ease-in;
+}
+
+/* Estilos para o conteúdo principal */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+  margin-left: 240px;
+  width: calc(100% - 240px);
+}
+
+.sidebar-collapsed .main-content,
+.main-content.sidebar-collapsed {
+  margin-left: 60px;
+  width: calc(100% - 60px);
+}
+
+/* Estilos para os componentes de página */
+.page-title {
+  margin-bottom: 24px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-secondary {
+  background-color: #f1f3f5;
+  color: #495057;
+}
+
+.btn-secondary:hover {
+  background-color: #e9ecef;
 }

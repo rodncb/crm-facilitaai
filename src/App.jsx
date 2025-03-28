@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -15,13 +15,17 @@ import Pagamentos from "./pages/Pagamentos";
 import Agenda from "./pages/Agenda";
 import Propostas from "./pages/Propostas";
 import PropostaCliente from "./pages/PropostaCliente";
+import Agradecimento from "./pages/Agradecimento";
 import Configuracoes from "./pages/Configuracoes";
 import Login from "./pages/Login";
+import Admin from "./pages/Admin";
+import Relatorios from "./pages/Relatorios";
 import "./App.css";
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("auth_token");
+  const isAuthenticated =
+    localStorage.getItem("auth_token") || localStorage.getItem("userInfo");
   const location = useLocation();
 
   if (!isAuthenticated) {
@@ -34,7 +38,8 @@ const ProtectedRoute = ({ children }) => {
 
 // Componente para rota de login
 const LoginRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("auth_token");
+  const isAuthenticated =
+    localStorage.getItem("auth_token") || localStorage.getItem("userInfo");
 
   if (isAuthenticated) {
     // Redirecionar para dashboard se já estiver autenticado
@@ -45,7 +50,10 @@ const LoginRoute = ({ children }) => {
 };
 
 const App = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
+    window.innerWidth <= 768 ? true : false
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -61,6 +69,14 @@ const App = () => {
     handleResize(); // Executar imediatamente para configurar o estado correto
     return () => window.removeEventListener("resize", handleResize);
   }, [isSidebarCollapsed]);
+
+  // Verificar autenticação ao carregar
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   // Inicialização do LocalStorage para armazenamento de dados
   useEffect(() => {
@@ -95,8 +111,10 @@ const App = () => {
 
   // Verifica se deve mostrar a barra lateral baseado na rota
   const isClientRoute = (pathname) => {
-    // Verifica se a rota começa com /proposta/ seguido por qualquer combinação de letras e números
-    return /^\/proposta\/[a-zA-Z0-9]+/.test(pathname);
+    // Verifica se a rota contém /proposta/ ou é a página de agradecimento
+    return (
+      pathname.includes("/proposta/") || pathname.includes("/agradecimento")
+    );
   };
 
   return (
@@ -107,23 +125,19 @@ const App = () => {
           <Route
             path="/login"
             element={
-              <LoginRoute>
-                <Login />
-              </LoginRoute>
+              isAuthenticated ? (
+                <Navigate to="/" />
+              ) : (
+                <Login setIsAuthenticated={setIsAuthenticated} />
+              )
             }
           />
 
           {/* Rota pública para cliente visualizar proposta */}
           <Route path="/proposta/:id" element={<PropostaCliente />} />
 
-          {/* Rota alternativa para compatibilidade com GitHub Pages */}
-          <Route
-            path="/crm-facilitaai/proposta/:id"
-            element={<PropostaCliente />}
-          />
-
-          {/* Rota para compatibilidade com acesso direto no GitHub Pages */}
-          <Route path="*/proposta/:id" element={<PropostaCliente />} />
+          {/* Rota pública para agradecimento */}
+          <Route path="/agradecimento" element={<Agradecimento />} />
 
           {/* Rotas protegidas (requerem autenticação) */}
           <Route
@@ -132,19 +146,14 @@ const App = () => {
               <ProtectedRoute>
                 <>
                   {/* Mostra a sidebar apenas para rotas que não sejam de clientes */}
-                  {!isClientRoute(window.location.pathname) && (
-                    <Sidebar
-                      collapsed={isSidebarCollapsed}
-                      setCollapsed={setIsSidebarCollapsed}
-                    />
-                  )}
+                  {!isClientRoute(window.location.pathname) && <Sidebar />}
                   <div
                     className={
                       isClientRoute(window.location.pathname)
                         ? "client-view"
-                        : isSidebarCollapsed
-                        ? "content-collapsed"
-                        : "content"
+                        : `main-content ${
+                            isSidebarCollapsed ? "sidebar-collapsed" : ""
+                          }`
                     }
                   >
                     <Routes>
@@ -158,6 +167,18 @@ const App = () => {
                       <Route
                         path="/configuracoes"
                         element={<Configuracoes />}
+                      />
+                      <Route
+                        path="/proposta/validacao/:id"
+                        element={<PropostaCliente />}
+                      />
+                      <Route
+                        path="/admin"
+                        element={<Navigate to="/configuracoes" replace />}
+                      />
+                      <Route
+                        path="/relatorios"
+                        element={<Navigate to="/" replace />}
                       />
 
                       {/* Redirecionar qualquer outra rota não conhecida para o Dashboard */}
