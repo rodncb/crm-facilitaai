@@ -144,8 +144,8 @@ const Sidebar = () => {
 
   const menuItems = [
     { path: "/", icon: <RiDashboardLine />, text: "Dashboard" },
-    { path: "/clientes", icon: <FaUsers />, text: "Clientes" },
     { path: "/leads", icon: <FaUserFriends />, text: "Leads" },
+    { path: "/clientes", icon: <FaUsers />, text: "Clientes" },
     { path: "/propostas", icon: <FaClipboardList />, text: "Propostas" },
     { path: "/contratos", icon: <FaFileContract />, text: "Contratos" },
     { path: "/pagamentos", icon: <FaMoneyBillWave />, text: "Pagamentos" },
