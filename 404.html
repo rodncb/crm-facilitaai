@@ -8,7 +8,6 @@
       // Redirecionamento para aplicação SPA no GitHub Pages
       const segments = window.location.pathname.split("/");
       let path = "";
-      let redirectURL = "";
 
       // Verificar se é uma rota de proposta
       if (segments.includes("proposta")) {
@@ -16,38 +15,25 @@
         if (propostaIndex >= 0 && segments.length > propostaIndex + 1) {
           // Capturar o id da proposta
           const propostaId = segments[propostaIndex + 1];
-          // Redirecionar para a rota correta no crm-facilitaai
-          redirectURL = "/crm-facilitaai/#/proposta/" + propostaId;
-          window.location.replace(redirectURL);
+          // Redirecionar para a rota correta usando HashRouter
+          window.location.replace("/crm-facilitaai/#/proposta/" + propostaId);
         } else {
           // Redirecionar para a aplicação principal
           window.location.replace("/crm-facilitaai/");
         }
       } else {
-        // Outros casos: redirecionar para a aplicação principal
-        // Código para Single Page Apps no GitHub Pages
-        var pathSegmentsToKeep = 1;
-
-        var l = window.location;
-        l.replace(
-          l.protocol +
-            "//" +
-            l.hostname +
-            (l.port ? ":" + l.port : "") +
-            l.pathname
-              .split("/")
-              .slice(0, pathSegmentsToKeep + 1)
-              .join("/") +
-            "/?/" +
-            l.pathname
-              .slice(1)
-              .split("/")
-              .slice(pathSegmentsToKeep)
-              .join("/")
-              .replace(/&/g, "~and~") +
-            (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
-            l.hash
+        // Para qualquer outra rota, redirecionar para a aplicação principal
+        // Extrair o caminho após "/crm-facilitaai/"
+        const pathMatch = window.location.pathname.match(
+          /\/crm-facilitaai\/(.*)/
         );
+        if (pathMatch && pathMatch[1]) {
+          // Redirecionar para a rota com hash
+          window.location.replace("/crm-facilitaai/#/" + pathMatch[1]);
+        } else {
+          // Redirecionar para a home
+          window.location.replace("/crm-facilitaai/");
+        }
       }
     </script>
   </head>
