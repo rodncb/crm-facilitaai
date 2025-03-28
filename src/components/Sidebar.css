@@ -11,10 +11,13 @@
   transition: all 0.3s ease;
   z-index: 1000;
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidebar.collapsed {
   width: 60px;
+  overflow: visible;
 }
 
 .sidebar.collapsed .logo-text,
@@ -238,6 +241,16 @@
   z-index: 999;
   backdrop-filter: blur(2px);
   transition: all 0.3s ease;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Media queries */
@@ -245,20 +258,32 @@
   .sidebar {
     transform: translateX(0);
     z-index: 1001;
+    width: 240px;
   }
 
   .sidebar.collapsed {
     transform: translateX(-100%);
+    width: 240px;
   }
 
   .content {
     margin-left: 0 !important;
+    width: 100% !important;
   }
 }
 
 @media (max-width: 480px) {
   .sidebar {
     width: 280px;
+  }
+
+  .sidebar.collapsed {
+    width: 280px;
+  }
+
+  .mobile-toggle-button {
+    top: 10px;
+    left: 10px;
   }
 }
 

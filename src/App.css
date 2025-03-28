@@ -41,12 +41,26 @@ body {
   flex-grow: 1;
   margin-left: 240px;
   overflow-y: auto;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s ease, width 0.3s ease;
   display: flex;
   flex-direction: column;
   background-color: var(--light-gray);
   padding: 0;
   width: calc(100% - 240px);
+  position: relative;
+}
+
+.content-collapsed {
+  flex-grow: 1;
+  margin-left: 60px;
+  overflow-y: auto;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--light-gray);
+  padding: 0;
+  width: calc(100% - 60px);
+  position: relative;
 }
 
 .content.sidebar-collapsed {
@@ -68,9 +82,18 @@ body {
     margin-left: 0;
     width: 100%;
     padding-top: 15px;
+    z-index: 1;
   }
 
   .content-collapsed {
+    margin-left: 0;
+    width: 100%;
+    padding-top: 15px;
+    z-index: 1;
+  }
+
+  /* Ajusta o conteúdo quando o sidebar está escondido */
+  .content.sidebar-collapsed {
     margin-left: 0;
     width: 100%;
   }

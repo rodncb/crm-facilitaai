@@ -33,13 +33,14 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
       // Auto collapse on mobile
       if (isMobile && !collapsed) {
-        toggleSidebar();
+        setCollapsed(true);
       }
     };
 
     window.addEventListener("resize", handleResize);
+    handleResize(); // Executar imediatamente para configurar o estado correto na inicialização
     return () => window.removeEventListener("resize", handleResize);
-  }, [collapsed]);
+  }, [collapsed, setCollapsed]);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -86,7 +87,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
               <span className="crm">CRM</span>
             </div>
           </div>
-          <button className="toggle-button" onClick={() => toggleSidebar()}>
+          <button className="toggle-button" onClick={toggleSidebar}>
             {collapsed ? <FaAngleRight /> : <FaAngleLeft />}
           </button>
         </div>
@@ -124,7 +125,10 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         </div>
       </div>
       {!collapsed && mobileView && (
-        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
+        <div
+          className="sidebar-overlay"
+          onClick={() => setCollapsed(true)}
+        ></div>
       )}
     </>
   );

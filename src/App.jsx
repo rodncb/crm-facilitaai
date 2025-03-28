@@ -46,20 +46,19 @@ const LoginRoute = ({ children }) => {
 
 const App = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  // isMobile é usado para ajustes responsivos em toda a aplicação
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      const isMobile = window.innerWidth <= 768;
 
       // Auto-colapsar sidebar em dispositivos móveis
-      if (window.innerWidth <= 768 && !isSidebarCollapsed) {
+      if (isMobile && !isSidebarCollapsed) {
         setIsSidebarCollapsed(true);
       }
     };
 
     window.addEventListener("resize", handleResize);
+    handleResize(); // Executar imediatamente para configurar o estado correto
     return () => window.removeEventListener("resize", handleResize);
   }, [isSidebarCollapsed]);
 
