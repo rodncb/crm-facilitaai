@@ -106,30 +106,33 @@
   display: flex;
   flex-direction: row;
   width: 100%;
+  padding: 0;
+  margin: 0;
 }
 
 .proposta-preview-container {
   flex: 1;
-  margin: 20px;
-  padding: 20px;
+  margin: 10px;
+  padding: 15px;
   background-color: #fff;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   overflow-y: auto;
+  max-width: calc(100% - 350px);
 }
 
 .proposta-info-sidebar {
-  width: 320px;
+  width: 300px;
   flex-shrink: 0;
   position: sticky;
-  top: 20px;
+  top: 10px;
   align-self: flex-start;
   height: fit-content;
-  margin: 20px;
+  margin: 10px;
   background-color: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 20px;
+  padding: 15px;
 }
 
 .proposta-meta {
@@ -191,9 +194,10 @@
 
 /* Proposta Preview Styles */
 .proposta-preview {
-  max-width: 800px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 30px;
+  padding: 15px;
   font-family: Arial, sans-serif;
   color: #333;
 }
@@ -388,35 +392,38 @@
 /* Responsividade */
 @media (min-width: 1200px) {
   .proposta-cliente-container {
-    display: flex;
-    flex-direction: column;
+    padding: 0;
+    max-width: 100%;
   }
 
   .proposta-content-wrapper {
-    display: flex;
     flex-direction: row;
-    width: 100%;
   }
 
   .proposta-preview-container {
     flex: 1;
-    margin-right: 20px;
+    margin-right: 10px;
   }
 
   .proposta-info-sidebar {
-    width: 320px;
+    width: 300px;
     flex-shrink: 0;
     position: sticky;
-    top: 20px;
+    top: 10px;
     align-self: flex-start;
     height: fit-content;
-    margin: 20px 20px 20px 0;
+    margin: 10px;
   }
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 1100px) {
   .proposta-content-wrapper {
     flex-direction: column-reverse;
+  }
+
+  .proposta-preview-container {
+    margin-top: 10px;
+    max-width: 100%;
   }
 
   .proposta-info-sidebar {
