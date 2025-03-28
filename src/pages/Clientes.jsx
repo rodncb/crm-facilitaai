@@ -35,11 +35,13 @@ const Clientes = () => {
 
   // Salvar clientes no localStorage sempre que a lista mudar
   useEffect(() => {
-    try {
-      localStorage.setItem("clientes", JSON.stringify(clientes));
-      console.log("Clientes salvos no localStorage:", clientes);
-    } catch (error) {
-      console.error("Erro ao salvar clientes no localStorage:", error);
+    if (clientes.length > 0) {
+      try {
+        localStorage.setItem("clientes", JSON.stringify(clientes));
+        console.log("Clientes salvos no localStorage:", clientes);
+      } catch (error) {
+        console.error("Erro ao salvar clientes no localStorage:", error);
+      }
     }
   }, [clientes]);
 
@@ -150,9 +152,7 @@ const Clientes = () => {
         (cliente) => cliente.id !== clienteId
       );
       setClientes(clientesAtualizados);
-
-      // Salvar imediatamente no localStorage para garantir persistência
-      localStorage.setItem("clientes", JSON.stringify(clientesAtualizados));
+      // O useEffect cuidará de atualizar o localStorage
     }
   };
 
@@ -171,18 +171,18 @@ const Clientes = () => {
       cargo: formData.get("cargo") || "",
     };
 
+    let clientesAtualizados;
     if (editingCliente) {
-      setClientes(
-        clientes.map((cliente) =>
-          cliente.id === editingCliente.id
-            ? { ...novoCliente, id: cliente.id }
-            : cliente
-        )
+      clientesAtualizados = clientes.map((cliente) =>
+        cliente.id === editingCliente.id
+          ? { ...novoCliente, id: cliente.id }
+          : cliente
       );
     } else {
-      setClientes([...clientes, { ...novoCliente, id: Date.now() }]);
+      clientesAtualizados = [...clientes, { ...novoCliente, id: Date.now() }];
     }
 
+    setClientes(clientesAtualizados);
     setShowForm(false);
     setEditingCliente(null);
   };

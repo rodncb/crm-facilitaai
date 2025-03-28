@@ -81,20 +81,22 @@ const Leads = () => {
 
   // Salvar leads no localStorage sempre que a lista mudar
   useEffect(() => {
-    try {
-      localStorage.setItem("leads", JSON.stringify(leads));
-      console.log("Leads salvos no localStorage:", leads);
+    if (leads.length > 0) {
+      try {
+        localStorage.setItem("leads", JSON.stringify(leads));
+        console.log("Leads salvos no localStorage:", leads);
 
-      // Verificar imediatamente se os dados foram salvos corretamente
-      const verificarLeadsSalvos = localStorage.getItem("leads");
-      console.log(
-        "Verificação de leads no localStorage:",
-        verificarLeadsSalvos
-          ? JSON.parse(verificarLeadsSalvos)
-          : "Nenhum lead encontrado"
-      );
-    } catch (error) {
-      console.error("Erro ao salvar leads no localStorage:", error);
+        // Verificar imediatamente se os dados foram salvos corretamente
+        const verificarLeadsSalvos = localStorage.getItem("leads");
+        if (verificarLeadsSalvos) {
+          console.log(
+            "Verificação de leads no localStorage:",
+            JSON.parse(verificarLeadsSalvos)
+          );
+        }
+      } catch (error) {
+        console.error("Erro ao salvar leads no localStorage:", error);
+      }
     }
   }, [leads]);
 
@@ -111,7 +113,8 @@ const Leads = () => {
 
   const handleDeleteLead = (leadId) => {
     if (window.confirm("Tem certeza que deseja excluir este lead?")) {
-      setLeads(leads.filter((lead) => lead.id !== leadId));
+      const leadsAtualizados = leads.filter((lead) => lead.id !== leadId);
+      setLeads(leadsAtualizados);
     }
   };
 
@@ -150,22 +153,22 @@ const Leads = () => {
       return;
     }
 
+    let leadsAtualizados;
     // Adicionar ou atualizar o lead
     if (editingLead) {
       // Atualização
-      setLeads(
-        leads.map((lead) =>
-          lead.id === editingLead.id ? { ...newLead, id: lead.id } : lead
-        )
+      leadsAtualizados = leads.map((lead) =>
+        lead.id === editingLead.id ? { ...newLead, id: lead.id } : lead
       );
       console.log("Lead atualizado:", { ...newLead, id: editingLead.id });
     } else {
       // Novo lead
       const id = Date.now();
-      setLeads([...leads, { ...newLead, id }]);
+      leadsAtualizados = [...leads, { ...newLead, id }];
       console.log("Novo lead criado:", { ...newLead, id });
     }
 
+    setLeads(leadsAtualizados);
     setShowForm(false);
     setEditingLead(null);
   };
@@ -179,7 +182,10 @@ const Leads = () => {
 
     if (lead) {
       const updatedLead = { ...lead, status: destination.droppableId };
-      setLeads(leads.map((l) => (l.id === leadId ? updatedLead : l)));
+      const leadsAtualizados = leads.map((l) =>
+        l.id === leadId ? updatedLead : l
+      );
+      setLeads(leadsAtualizados);
     }
   };
 
