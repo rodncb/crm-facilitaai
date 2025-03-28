@@ -31,28 +31,12 @@ const Propostas = () => {
 
   const previewRef = useRef();
 
+  // Efeito para carregar dados iniciais
   useEffect(() => {
-    // Carregar dados de exemplo
-    carregarClientesSalvos();
-    carregarLeadsSalvos();
-    carregarPropostasSalvas();
-  }, []);
-
-  // Salvar propostas no localStorage sempre que a lista mudar
-  useEffect(() => {
-    try {
-      localStorage.setItem("propostas", JSON.stringify(propostas));
-      console.log("Propostas salvas no localStorage:", propostas);
-    } catch (error) {
-      console.error("Erro ao salvar propostas no localStorage:", error);
-    }
-  }, [propostas]);
-
-  // Função para carregar clientes do localStorage
-  const carregarClientesSalvos = () => {
-    try {
-      const clientesSalvos = localStorage.getItem("clientes");
-      if (clientesSalvos) {
+    // Carregar clientes do localStorage
+    const clientesSalvos = localStorage.getItem("clientes");
+    if (clientesSalvos) {
+      try {
         const clientesData = JSON.parse(clientesSalvos);
         if (
           clientesData &&
@@ -60,64 +44,26 @@ const Propostas = () => {
           clientesData.length > 0
         ) {
           setClientes(clientesData);
-          return;
         }
+      } catch (error) {
+        console.error("Erro ao carregar clientes do localStorage:", error);
       }
-      // Se não houver dados salvos ou se forem inválidos, carrega os dados padrão
-      setClientes([
-        {
-          id: 1,
-          nome: "João Silva",
-          empresa: "TechCorp",
-          email: "joao@techcorp.com",
-          telefone: "(11) 98765-4321",
-        },
-        {
-          id: 2,
-          nome: "Maria Santos",
-          empresa: "Inovação Ltda",
-          email: "maria@inovacao.com",
-          telefone: "(11) 91234-5678",
-        },
-        {
-          id: 3,
-          nome: "Pedro Oliveira",
-          empresa: "ConsultaTech",
-          email: "pedro@consultatech.com",
-          telefone: "(11) 99876-5432",
-        },
-      ]);
-    } catch (error) {
-      console.error("Erro ao carregar clientes do localStorage:", error);
-      // Em caso de erro, carrega os dados padrão
-      setClientes([
-        {
-          id: 1,
-          nome: "João Silva",
-          empresa: "TechCorp",
-          email: "joao@techcorp.com",
-          telefone: "(11) 98765-4321",
-        },
-        {
-          id: 2,
-          nome: "Maria Santos",
-          empresa: "Inovação Ltda",
-          email: "maria@inovacao.com",
-          telefone: "(11) 91234-5678",
-        },
-        {
-          id: 3,
-          nome: "Pedro Oliveira",
-          empresa: "ConsultaTech",
-          email: "pedro@consultatech.com",
-          telefone: "(11) 99876-5432",
-        },
-      ]);
     }
-  };
 
-  // Função para carregar propostas do localStorage
-  const carregarPropostasSalvas = () => {
+    // Carregar leads do localStorage
+    const leadsString = localStorage.getItem("leads");
+    if (leadsString) {
+      try {
+        const leadsSalvos = JSON.parse(leadsString);
+        if (Array.isArray(leadsSalvos)) {
+          setLeads(leadsSalvos);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar leads do localStorage:", error);
+      }
+    }
+
+    // Carregar propostas do localStorage
     try {
       const propostasSalvas = localStorage.getItem("propostas");
       if (propostasSalvas) {
@@ -128,17 +74,26 @@ const Propostas = () => {
           propostasData.length > 0
         ) {
           setPropostas(propostasData);
-          return;
+        } else {
+          carregarPropostasPadrao();
         }
+      } else {
+        carregarPropostasPadrao();
       }
-      // Se não houver dados salvos ou se forem inválidos, carrega os dados padrão
-      carregarPropostasPadrao();
     } catch (error) {
       console.error("Erro ao carregar propostas do localStorage:", error);
-      // Em caso de erro, carrega os dados padrão
       carregarPropostasPadrao();
     }
-  };
+  }, []);
+
+  // Salvar propostas no localStorage sempre que a lista mudar
+  useEffect(() => {
+    try {
+      localStorage.setItem("propostas", JSON.stringify(propostas));
+    } catch (error) {
+      console.error("Erro ao salvar propostas no localStorage:", error);
+    }
+  }, [propostas]);
 
   // Função para carregar dados padrão de propostas
   const carregarPropostasPadrao = () => {
@@ -199,68 +154,7 @@ const Propostas = () => {
           },
         ],
       },
-      {
-        id: 3,
-        numero: "PROP-2023-003",
-        origem: "lead",
-        cliente: "Carlos Mendes - Startup XYZ",
-        clienteId: 1,
-        data: "2023-06-18",
-        validade: "2023-07-02",
-        valorTotal: 8000.0,
-        status: "recusada",
-        contratoGerado: false,
-        itens: [
-          {
-            id: 1,
-            descricao: "Plano de marketing inicial",
-            quantidade: 1,
-            valorUnitario: 5000.0,
-          },
-          {
-            id: 2,
-            descricao: "Gestão de redes sociais",
-            quantidade: 3,
-            valorUnitario: 1000.0,
-          },
-        ],
-      },
     ]);
-  };
-
-  // Função para carregar leads do localStorage
-  const carregarLeadsSalvos = () => {
-    // Carregar leads do localStorage ou usar os dados de exemplo
-    try {
-      const leadsString = localStorage.getItem("leads");
-      console.log("Dados brutos do localStorage:", leadsString);
-
-      if (leadsString) {
-        const leadsSalvos = JSON.parse(leadsString);
-        console.log("Leads carregados do localStorage:", leadsSalvos);
-
-        if (
-          leadsSalvos &&
-          Array.isArray(leadsSalvos) &&
-          leadsSalvos.length > 0
-        ) {
-          setLeads(leadsSalvos);
-        } else {
-          console.log(
-            "Usando leads padrão porque os dados do localStorage estão vazios ou inválidos"
-          );
-          carregarLeadsPadrao();
-        }
-      } else {
-        console.log(
-          "Nenhum dado de leads no localStorage, usando leads padrão"
-        );
-        carregarLeadsPadrao();
-      }
-    } catch (error) {
-      console.error("Erro ao processar leads do localStorage:", error);
-      carregarLeadsPadrao();
-    }
   };
 
   const formatarData = (data) => {
@@ -579,33 +473,6 @@ const Propostas = () => {
     alert(`Link copiado com sucesso!\nFormato personalizado: ${nomeComCodigo}`);
 
     setTimeout(() => setLinkCopiado(false), 2000);
-  };
-
-  // Função para carregar leads padrão
-  const carregarLeadsPadrao = () => {
-    setLeads([
-      {
-        id: 1,
-        nome: "Carlos Mendes",
-        empresa: "Startup XYZ",
-        email: "carlos@startupxyz.com",
-        telefone: "(11) 94567-8912",
-      },
-      {
-        id: 2,
-        nome: "Ana Ferreira",
-        empresa: "Nova Empresa",
-        email: "ana@novaempresa.com",
-        telefone: "(11) 93456-7890",
-      },
-      {
-        id: 3,
-        nome: "Roberto Santos",
-        empresa: "TechSoft",
-        email: "roberto@techsoft.com",
-        telefone: "(11) 92345-6789",
-      },
-    ]);
   };
 
   const PropostaPreview = ({ proposta }) => {

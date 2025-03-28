@@ -84,15 +84,11 @@ const Leads = () => {
     if (leads.length > 0) {
       try {
         localStorage.setItem("leads", JSON.stringify(leads));
-        console.log("Leads salvos no localStorage:", leads);
 
         // Verificar imediatamente se os dados foram salvos corretamente
         const verificarLeadsSalvos = localStorage.getItem("leads");
         if (verificarLeadsSalvos) {
-          console.log(
-            "Verificação de leads no localStorage:",
-            JSON.parse(verificarLeadsSalvos)
-          );
+          // dados verificados com sucesso
         }
       } catch (error) {
         console.error("Erro ao salvar leads no localStorage:", error);
@@ -120,9 +116,6 @@ const Leads = () => {
 
   const handleSaveLead = (e) => {
     e.preventDefault();
-
-    // Log para debug
-    console.log("Form submetido:", e.target);
 
     // Obter os valores diretamente dos inputs (método alternativo à FormData)
     const nome = e.target.elements.nome?.value || "";
@@ -160,12 +153,10 @@ const Leads = () => {
       leadsAtualizados = leads.map((lead) =>
         lead.id === editingLead.id ? { ...newLead, id: lead.id } : lead
       );
-      console.log("Lead atualizado:", { ...newLead, id: editingLead.id });
     } else {
       // Novo lead
       const id = Date.now();
       leadsAtualizados = [...leads, { ...newLead, id }];
-      console.log("Novo lead criado:", { ...newLead, id });
     }
 
     setLeads(leadsAtualizados);

@@ -69,8 +69,6 @@ const App = () => {
 
     if (!appInicializado) {
       // Inicializar o app com dados padrão
-      console.log("Inicializando o armazenamento local para o CRM...");
-
       // Marcar o app como inicializado para evitar reinicialização dos dados
       localStorage.setItem("app_inicializado", "true");
       localStorage.setItem("app_version", "1.0.0");
@@ -79,9 +77,8 @@ const App = () => {
       const verificarEInicializar = (chave, dadosPadrao) => {
         if (!localStorage.getItem(chave)) {
           localStorage.setItem(chave, JSON.stringify(dadosPadrao));
-          console.log(`Coleção ${chave} inicializada com dados padrão`);
         } else {
-          console.log(`Coleção ${chave} já existente, preservando dados`);
+          // dados preservados
         }
       };
 

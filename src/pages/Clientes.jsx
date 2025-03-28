@@ -38,7 +38,6 @@ const Clientes = () => {
     if (clientes.length > 0) {
       try {
         localStorage.setItem("clientes", JSON.stringify(clientes));
-        console.log("Clientes salvos no localStorage:", clientes);
       } catch (error) {
         console.error("Erro ao salvar clientes no localStorage:", error);
       }
@@ -213,7 +212,10 @@ const Clientes = () => {
     <div className="clientes-container">
       <div className="clientes-header">
         <h1>Clientes</h1>
-        <button className="btn-novo-cliente" onClick={() => setShowForm(true)}>
+        <button
+          className="btn-novo-cliente btn-primary"
+          onClick={() => setShowForm(true)}
+        >
           <span>+</span>
           Novo Cliente
         </button>
@@ -230,7 +232,7 @@ const Clientes = () => {
         </div>
       </div>
 
-      <div className="clientes-table">
+      <div className="clientes-table card-shadow">
         <div className="table-header">
           <div>Nome</div>
           <div>Tipo</div>
@@ -242,7 +244,7 @@ const Clientes = () => {
         </div>
 
         {clientes.map((cliente) => (
-          <div key={cliente.id} className="table-row">
+          <div key={cliente.id} className="table-row hover-effect">
             <div className="nome-column">
               <span className="cliente-name">{cliente.nome}</span>
               {cliente.tipo === "empresa" && cliente.empresa && (
