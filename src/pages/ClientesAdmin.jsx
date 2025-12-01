@@ -36,9 +36,24 @@ const ClientesAdmin = () => {
             if (busca) filters.search = busca;
 
             const response = await clientesAPI.getAll(filters);
-            setClientes(response.data || []);
+
+            // Se não houver clientes no backend, carregar do localStorage
+            if (!response.data || response.data.length === 0) {
+                const clientesLocal = JSON.parse(localStorage.getItem('clientes') || '[]');
+                const clientesFiltrados = filtro === 'ativos'
+                    ? clientesLocal.filter(c => c.status === 'ativo')
+                    : clientesLocal;
+                setClientes(clientesFiltrados.map(c => ({ ...c, _id: c.id || c._id })));
+            } else {
+                setClientes(response.data || []);
+            }
         } catch (error) {
-            
+            // Fallback para localStorage se API falhar
+            const clientesLocal = JSON.parse(localStorage.getItem('clientes') || '[]');
+            const clientesFiltrados = filtro === 'ativos'
+                ? clientesLocal.filter(c => c.status === 'ativo')
+                : clientesLocal;
+            setClientes(clientesFiltrados.map(c => ({ ...c, _id: c.id || c._id })));
         } finally {
             setLoading(false);
         }
@@ -47,9 +62,20 @@ const ClientesAdmin = () => {
     const loadTarefasCliente = async (clienteId) => {
         try {
             const response = await tarefasAPI.getByCliente(clienteId);
-            setTarefas(response.data || []);
+
+            // Se não houver tarefas no backend, carregar do localStorage
+            if (!response.data || response.data.length === 0) {
+                const tarefasLocal = JSON.parse(localStorage.getItem('tarefas') || '[]');
+                const tarefasCliente = tarefasLocal.filter(t => t.clienteId === clienteId || t.clienteId === clienteId.toString());
+                setTarefas(tarefasCliente.map(t => ({ ...t, _id: t.id || t._id })));
+            } else {
+                setTarefas(response.data || []);
+            }
         } catch (error) {
-            
+            // Fallback para localStorage
+            const tarefasLocal = JSON.parse(localStorage.getItem('tarefas') || '[]');
+            const tarefasCliente = tarefasLocal.filter(t => t.clienteId === clienteId || t.clienteId === clienteId.toString());
+            setTarefas(tarefasCliente.map(t => ({ ...t, _id: t.id || t._id })));
         }
     };
 

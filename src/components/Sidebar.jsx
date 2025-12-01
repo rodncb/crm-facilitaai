@@ -129,6 +129,10 @@ const Sidebar = () => {
     localStorage.removeItem("userInfo");
     localStorage.removeItem("user_info");
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("token");
+
+    // Disparar evento de mudança de autenticação
+    window.dispatchEvent(new Event('auth-change'));
 
     // Redirecionar para a página de login
     navigate("/login");
