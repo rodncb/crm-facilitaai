@@ -11,113 +11,66 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verificar se já existe um usuário administrador
-    const adminExists = localStorage.getItem("adminUser");
-
-    if (!adminExists) {
-      // Criar usuário administrador padrão
-      const adminUser = {
-        email: "rodrigo@facilitaai.com.br",
-        password: "FacilitaAI@2023", // Senha gerada
-        nome: "Rodrigo Bezerra",
-        role: "admin",
-        lastLogin: null,
-      };
-
-      localStorage.setItem("adminUser", JSON.stringify(adminUser));
-    }
-
-    // Adicionar um segundo administrador
-    const adminTales = localStorage.getItem("adminTales");
-    if (!adminTales) {
-      // Criar senha segura para o novo administrador
-      const senhaSegura = "123456";
-
-      // Criar segundo usuário administrador
-      const talesUser = {
-        email: "talesrocha@facilitaai.com.br",
-        password: senhaSegura,
-        nome: "Tales Rocha",
-        role: "admin",
-        lastLogin: null,
-      };
-
-      localStorage.setItem("adminTales", JSON.stringify(talesUser));
-
-      // Armazenar a senha em um local visível para recuperação
-      localStorage.setItem("senhaTemporariaTales", senhaSegura);
-    } else {
-      // Atualizar a senha do Tales para 123456
-      const talesUser = JSON.parse(adminTales);
-      talesUser.password = "123456";
-      localStorage.setItem("adminTales", JSON.stringify(talesUser));
-    }
-
     // Verificar se o usuário já está logado
-    const isAuthenticated = localStorage.getItem("auth_token");
+    const isAuthenticated = localStorage.getItem("token") || localStorage.getItem("auth_token");
     if (isAuthenticated) {
       navigate("/");
     }
   }, [navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    // Simulando uma chamada de API com setTimeout
-    setTimeout(() => {
-      const adminUser = JSON.parse(localStorage.getItem("adminUser") || "{}");
-      const adminTales = JSON.parse(localStorage.getItem("adminTales") || "{}");
+    try {
+      // Chamar API de login
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          senha: password
+        })
+      });
 
-      let usuarioAutenticado = null;
+      const data = await response.json();
 
-      // Verificar se as credenciais correspondem a qualquer um dos administradores
-      if (email === adminUser.email && password === adminUser.password) {
-        usuarioAutenticado = adminUser;
-      } else if (
-        email === adminTales.email &&
-        password === adminTales.password
-      ) {
-        usuarioAutenticado = adminTales;
-      }
-
-      if (usuarioAutenticado) {
+      if (data.success && data.data) {
         // Login bem-sucedido
-        const authToken = `token_${Date.now()}`;
-        localStorage.setItem("auth_token", authToken);
+        const { token, nome, email: userEmail, role } = data.data;
 
-        // Salvar informações do usuário no formato esperado pelo Sidebar
-        const userInfoData = {
-          name: usuarioAutenticado.nome,
-          email: usuarioAutenticado.email,
-          role: usuarioAutenticado.role,
-          lastLogin: new Date().toISOString(),
+        // Salvar token
+        localStorage.setItem('token', token);
+
+        // Salvar informações do usuário
+        const userInfo = {
+          name: nome,
+          nome: nome,
+          email: userEmail,
+          role: role
         };
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
 
-        localStorage.setItem("userInfo", JSON.stringify(userInfoData));
+        // Manter compatibilidade com código antigo
+        localStorage.setItem('auth_token', token);
 
-        // Atualizar último login
-        usuarioAutenticado.lastLogin = new Date().toISOString();
+        // Trigger auth state update in App.jsx
+        window.dispatchEvent(new Event('auth-change'));
 
-        if (email === adminUser.email) {
-          localStorage.setItem("adminUser", JSON.stringify(usuarioAutenticado));
-        } else {
-          localStorage.setItem(
-            "adminTales",
-            JSON.stringify(usuarioAutenticado)
-          );
-        }
-
-        // Redirecionar para o dashboard explicitamente
+        // Redirecionar para o dashboard
         navigate("/");
       } else {
         // Login falhou
-        setError("Email ou senha inválidos. Tente novamente.");
+        setError(data.error || "Email ou senha inválidos. Tente novamente.");
       }
-
+    } catch (error) {
+      setError("Erro ao conectar com o servidor. Tente novamente.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -184,6 +137,12 @@ const Login = () => {
               {loading ? "Autenticando..." : "Entrar"}
             </button>
           </form>
+          {error && (
+            <div className="login-actions">
+              <button className="secondary-button" onClick={() => navigate("/")}>Voltar para Home</button>
+              <button className="outline-button" onClick={() => navigate('/?create-account=true')}>Criar Conta</button>
+            </div>
+          )}
         </div>
 
         <div className="slogan-right">

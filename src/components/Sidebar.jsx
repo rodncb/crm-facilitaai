@@ -140,6 +140,7 @@ const Sidebar = () => {
     { path: "/", icon: <RiDashboardLine />, text: "Dashboard" },
     { path: "/leads", icon: <FaUserFriends />, text: "Leads" },
     { path: "/clientes", icon: <FaUsers />, text: "Clientes" },
+    { path: "/clientes-admin", icon: <FaUsersCog />, text: "Admin Clientes" },
     { path: "/propostas", icon: <FaClipboardList />, text: "Propostas" },
     { path: "/contratos", icon: <FaFileContract />, text: "Contratos" },
     { path: "/pagamentos", icon: <FaMoneyBillWave />, text: "Pagamentos" },
@@ -152,9 +153,8 @@ const Sidebar = () => {
       <Link
         key={item.path}
         to={item.path}
-        className={`menu-item ${
-          location.pathname === item.path ? "active" : ""
-        }`}
+        className={`menu-item ${location.pathname === item.path ? "active" : ""
+          }`}
       >
         {item.icon}
         <span>{item.text}</span>

@@ -130,7 +130,6 @@ const Agenda = () => {
       setEventos(todosEventos);
       setEventosFiltrados(todosEventos);
     } catch (error) {
-      console.error("Erro ao carregar eventos:", error);
       // Em caso de erro, use dados de exemplo
       const proximoId = 1;
 

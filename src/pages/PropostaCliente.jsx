@@ -166,7 +166,7 @@ const PropostaCliente = () => {
           setLoading(false);
         }
       } catch (error) {
-        console.error("Erro ao processar proposta:", error);
+        
         setError("Erro ao carregar a proposta. Por favor, tente novamente.");
         setLoading(false);
       }
@@ -444,7 +444,7 @@ const PropostaCliente = () => {
           window.location.href = `${basePath}/#/agradecimento`;
         }, 5000); // Aumentar para 5 segundos para dar tempo de ler a mensagem
       } catch (error) {
-        console.error("Erro ao finalizar ação:", error);
+        
         alert(
           "Ocorreu um erro ao processar sua ação. Por favor, tente novamente."
         );

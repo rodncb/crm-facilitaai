@@ -8,8 +8,8 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // Use base: "/" para desenvolvimento local e "/crm-facilitaai/" para produção
-  const base = mode === "production" ? "/crm-facilitaai/" : "/";
+  // Use base: "/" para custom domain (crm.facilitaai.com.br)
+  const base = "/";
 
   return {
     plugins: [

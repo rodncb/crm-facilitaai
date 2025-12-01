@@ -37,7 +37,7 @@ const Pagamentos = () => {
         setPagamentos(pagamentosJSON);
       }
     } catch (error) {
-      console.error("Erro ao carregar dados do localStorage:", error);
+      
       carregarContratosPadrao();
       carregarPagamentosPadrao();
     }
@@ -49,7 +49,7 @@ const Pagamentos = () => {
       try {
         localStorage.setItem("contratos", JSON.stringify(contratos));
       } catch (error) {
-        console.error("Erro ao salvar contratos no localStorage:", error);
+        
       }
     }
   }, [contratos]);
@@ -60,7 +60,7 @@ const Pagamentos = () => {
       try {
         localStorage.setItem("pagamentos", JSON.stringify(pagamentos));
       } catch (error) {
-        console.error("Erro ao salvar pagamentos no localStorage:", error);
+        
       }
     }
   }, [pagamentos]);

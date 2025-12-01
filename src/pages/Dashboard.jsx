@@ -150,7 +150,7 @@ const Dashboard = () => {
         atividadesRecentes: atividades,
       });
     } catch (error) {
-      console.error("Erro ao carregar dados do dashboard:", error);
+      // Erro ao carregar dados do dashboard
     }
   };
 

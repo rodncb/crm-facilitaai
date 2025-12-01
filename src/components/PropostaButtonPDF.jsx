@@ -34,7 +34,7 @@ const PropostaButtonPDF = ({ proposta, contentRef }) => {
       // Liberar o objeto URL após o uso
       URL.revokeObjectURL(fileURL);
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
+      
       alert("Erro ao gerar o PDF. Por favor, tente novamente.");
     } finally {
       setIsGenerating(false);

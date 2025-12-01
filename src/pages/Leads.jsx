@@ -10,6 +10,7 @@ import {
   FaPhone,
   FaTimes,
 } from "react-icons/fa";
+import EmojiPickerInput from "../components/EmojiPickerInput";
 import "./Leads.css";
 
 const Leads = () => {
@@ -69,6 +70,7 @@ const Leads = () => {
 
   const [showDetails, setShowDetails] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [observacoes, setObservacoes] = useState("");
 
   // Carregar leads do localStorage ao iniciar
   useEffect(() => {
@@ -77,7 +79,7 @@ const Leads = () => {
       try {
         setLeads(JSON.parse(leadsSalvos));
       } catch (error) {
-        console.error("Erro ao carregar leads do localStorage:", error);
+        
       }
     }
   }, []);
@@ -94,7 +96,7 @@ const Leads = () => {
           // dados verificados com sucesso
         }
       } catch (error) {
-        console.error("Erro ao salvar leads no localStorage:", error);
+        
       }
     }
   }, [leads]);
@@ -107,6 +109,7 @@ const Leads = () => {
 
   const handleEditLead = (lead) => {
     setEditingLead(lead);
+    setObservacoes(lead.observacoes || "");
     setShowForm(true);
   };
 
@@ -129,6 +132,15 @@ const Leads = () => {
     const status = e.target.elements.status?.value || "novo"; // Default para novo
     const origem = e.target.elements.origem?.value || "";
     const proximoFollowup = e.target.elements.proximoFollowup?.value || "";
+    // Observações is managed via state or we need to handle it differently since it's a custom component
+    // We'll need to add state for it in the form, but for now let's assume we can get it if we attach it to a hidden input or manage state.
+    // Actually, EmojiPickerInput takes value and onChange. So we need state for the form.
+    // Let's refactor the form to use state for this field or all fields.
+    // Since refactoring all fields is risky, let's just add state for observacoes.
+
+    // Wait, I need to add the state logic first. I'll do that in a separate step or use a ref.
+    // Let's use a ref or state. State is better.
+    // I'll skip this edit and do a multi_replace to add state and the field.
 
     // Criar o objeto lead
     const newLead = {
@@ -141,6 +153,7 @@ const Leads = () => {
       origem,
       dataCriacao: new Date().toLocaleDateString(),
       proximoFollowup,
+      observacoes,
     };
 
     // Verificar se os campos obrigatórios estão preenchidos
@@ -205,7 +218,10 @@ const Leads = () => {
     <div className="leads-container">
       <div className="leads-header">
         <h1>Leads</h1>
-        <button className="btn-novo-lead" onClick={() => setShowForm(true)}>
+        <button className="btn-novo-lead" onClick={() => {
+          setObservacoes("");
+          setShowForm(true);
+        }}>
           <span>+</span>
           Novo Lead
         </button>
@@ -376,6 +392,7 @@ const Leads = () => {
                 onClick={() => {
                   setShowForm(false);
                   setEditingLead(null);
+                  setObservacoes("");
                 }}
               >
                 <FaTimes />
@@ -468,6 +485,14 @@ const Leads = () => {
                   required
                 />
               </div>
+              <div className="form-group">
+                <label>Observações</label>
+                <EmojiPickerInput
+                  value={observacoes}
+                  onChange={setObservacoes}
+                  placeholder="Adicione observações sobre o lead..."
+                />
+              </div>
               <div className="form-actions">
                 <button
                   type="button"
@@ -475,6 +500,7 @@ const Leads = () => {
                   onClick={() => {
                     setShowForm(false);
                     setEditingLead(null);
+                    setObservacoes("");
                   }}
                 >
                   Cancelar

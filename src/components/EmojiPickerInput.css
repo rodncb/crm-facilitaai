@@ -1,0 +1,68 @@
+.emoji-picker-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+}
+
+.emoji-input {
+    width: 100%;
+    padding: 10px;
+    padding-right: 40px;
+    /* Space for the button */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.emoji-trigger-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    font-size: 1.2rem;
+    padding: 5px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.emoji-trigger-btn:hover {
+    color: #fd7e14;
+    /* Primary color */
+}
+
+.picker-popover {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    z-index: 1000;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    width: 300px;
+    /* Fixed width for the picker popover */
+}
+
+@media (max-width: 768px) {
+    .picker-popover {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        bottom: auto;
+        right: auto;
+        width: 90%;
+        max-width: 350px;
+    }
+}

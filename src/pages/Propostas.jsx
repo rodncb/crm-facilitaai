@@ -101,7 +101,7 @@ const Propostas = () => {
         carregarPropostasPadrao();
       }
     } catch (error) {
-      console.error("Erro ao carregar propostas do localStorage:", error);
+      
       carregarPropostasPadrao();
     }
   }, []);
@@ -111,7 +111,7 @@ const Propostas = () => {
     try {
       localStorage.setItem("propostas", JSON.stringify(propostas));
     } catch (error) {
-      console.error("Erro ao salvar propostas no localStorage:", error);
+      
     }
   }, [propostas]);
 

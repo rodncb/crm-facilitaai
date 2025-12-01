@@ -27,7 +27,6 @@ const Clientes = () => {
           carregarClientesPadrao();
         }
       } catch (error) {
-        console.error("Erro ao carregar clientes do localStorage:", error);
         carregarClientesPadrao();
       }
     } else {
@@ -41,7 +40,7 @@ const Clientes = () => {
       try {
         localStorage.setItem("clientes", JSON.stringify(clientes));
       } catch (error) {
-        console.error("Erro ao salvar clientes no localStorage:", error);
+        // Erro ao salvar
       }
     }
   }, [clientes]);
@@ -96,7 +95,6 @@ const Clientes = () => {
           carregarLeadsPadrao();
         }
       } catch (error) {
-        console.error("Erro ao carregar leads do localStorage:", error);
         carregarLeadsPadrao();
       }
     } else {

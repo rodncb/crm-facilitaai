@@ -4,12 +4,14 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation,
 } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Clientes from "./pages/Clientes";
+import ClientesAdmin from "./pages/ClientesAdmin";
 import Leads from "./pages/Leads";
 import Dashboard from "./pages/Dashboard";
+import DashboardHome from "./pages/DashboardHome";
+import LandingPage from "./pages/LandingPage";
 import Contratos from "./pages/Contratos";
 import Pagamentos from "./pages/Pagamentos";
 import Agenda from "./pages/Agenda";
@@ -26,11 +28,10 @@ import "./App.css";
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated =
     localStorage.getItem("auth_token") || localStorage.getItem("userInfo");
-  const location = useLocation();
 
   if (!isAuthenticated) {
     // Redirecionar para login se não estiver autenticado
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;
@@ -53,7 +54,35 @@ const App = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     window.innerWidth <= 768 ? true : false
   );
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Use state for authentication to trigger re-renders
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    Boolean(localStorage.getItem("userInfo") || localStorage.getItem("auth_token"))
+  );
+
+  // Listen for storage changes (for cross-tab sync) and manual checks
+  useEffect(() => {
+    const checkAuth = () => {
+      const authStatus = Boolean(
+        localStorage.getItem("userInfo") || localStorage.getItem("auth_token")
+      );
+      setIsAuthenticated(authStatus);
+    };
+
+    // Check auth on mount
+    checkAuth();
+
+    // Listen for storage events (cross-tab)
+    window.addEventListener('storage', checkAuth);
+
+    // Custom event for same-tab updates
+    window.addEventListener('auth-change', checkAuth);
+
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+      window.removeEventListener('auth-change', checkAuth);
+    };
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -70,13 +99,7 @@ const App = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [isSidebarCollapsed]);
 
-  // Verificar autenticação ao carregar
-  useEffect(() => {
-    const userInfo = localStorage.getItem("userInfo");
-    if (userInfo) {
-      setIsAuthenticated(true);
-    }
-  }, []);
+  // isAuthenticated é derivado do localStorage para refletir mudanças imediatas
 
   // Inicialização do LocalStorage para armazenamento de dados
   useEffect(() => {
@@ -119,78 +142,52 @@ const App = () => {
 
   return (
     <Router>
-      <div className="app">
+      {!isAuthenticated ? (
+        // Landing Page e rotas públicas (sem sidebar)
         <Routes>
-          {/* Rota de login (pública) */}
-          <Route
-            path="/login"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/" />
-              ) : (
-                <Login setIsAuthenticated={setIsAuthenticated} />
-              )
-            }
-          />
-
-          {/* Rota pública para cliente visualizar proposta */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/home" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/proposta/:id" element={<PropostaCliente />} />
-
-          {/* Rota pública para agradecimento */}
           <Route path="/agradecimento" element={<Agradecimento />} />
-
-          {/* Rotas protegidas (requerem autenticação) */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <>
-                  {/* Mostra a sidebar apenas para rotas que não sejam de clientes */}
-                  {!isClientRoute(window.location.pathname) && <Sidebar />}
-                  <div
-                    className={
-                      isClientRoute(window.location.pathname)
-                        ? "client-view"
-                        : `main-content ${
-                            isSidebarCollapsed ? "sidebar-collapsed" : ""
-                          }`
-                    }
-                  >
-                    <Routes>
-                      <Route path="/" element={<Dashboard />} />
-                      <Route path="/clientes" element={<Clientes />} />
-                      <Route path="/leads" element={<Leads />} />
-                      <Route path="/contratos" element={<Contratos />} />
-                      <Route path="/propostas" element={<Propostas />} />
-                      <Route path="/pagamentos" element={<Pagamentos />} />
-                      <Route path="/agenda" element={<Agenda />} />
-                      <Route
-                        path="/configuracoes"
-                        element={<Configuracoes />}
-                      />
-                      <Route
-                        path="/proposta/validacao/:id"
-                        element={<PropostaCliente />}
-                      />
-                      <Route
-                        path="/admin"
-                        element={<Navigate to="/configuracoes" replace />}
-                      />
-                      <Route
-                        path="/relatorios"
-                        element={<Navigate to="/" replace />}
-                      />
-
-                      {/* Redirecionar qualquer outra rota não conhecida para o Dashboard */}
-                      <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                  </div>
-                </>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
+      ) : (
+        // Rotas autenticadas (com sidebar)
+        <div className="app-container" style={{ display: "flex", minHeight: "100vh", backgroundColor: "#f5f7fa" }}>
+          <Sidebar />
+          <div
+            className="main-content"
+            style={{
+              flex: 1,
+              marginLeft: isSidebarCollapsed ? "80px" : "280px",
+              transition: "margin-left 0.3s ease",
+              padding: "20px",
+              overflowY: "auto",
+            }}
+          >
+            <Routes>
+              <Route path="/" element={<DashboardHome />} />
+              <Route path="/dashboard-old" element={<Dashboard />} />
+              <Route path="/clientes" element={<Clientes />} />
+              <Route path="/clientes-admin" element={<ClientesAdmin />} />
+              <Route path="/leads" element={<Leads />} />
+              <Route path="/contratos" element={<Contratos />} />
+              <Route path="/propostas" element={<Propostas />} />
+              <Route path="/pagamentos" element={<Pagamentos />} />
+              <Route path="/agenda" element={<Agenda />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/proposta/validacao/:id" element={<PropostaCliente />} />
+              <Route path="/proposta/:id" element={<PropostaCliente />} />
+              <Route path="/agradecimento" element={<Agradecimento />} />
+              <Route path="/admin" element={<Navigate to="/configuracoes" replace />} />
+              <Route path="/relatorios" element={<Relatorios />} />
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </div>
+      )}
     </Router>
   );
 };
