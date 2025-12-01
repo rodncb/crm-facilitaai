@@ -331,7 +331,6 @@ const ClientesAdmin = () => {
                                     ))}
                                 </div>
                             </DragDropContext>
-                            </div>
                         </>
                     ) : (
                         <div className="empty-selection">
