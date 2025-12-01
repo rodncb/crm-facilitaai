@@ -141,6 +141,39 @@ export const clientesAPI = {
     }
 };
 
+// ==================== LEADS ====================
+export const leadsAPI = {
+    getAll: async (filters = {}) => {
+        const response = await api.get('/leads', { params: filters });
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`/leads/${id}`);
+        return response.data;
+    },
+
+    create: async (leadData) => {
+        const response = await api.post('/leads', leadData);
+        return response.data;
+    },
+
+    update: async (id, leadData) => {
+        const response = await api.put(`/leads/${id}`, leadData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        const response = await api.delete(`/leads/${id}`);
+        return response.data;
+    },
+
+    convert: async (id, clienteId = null) => {
+        const response = await api.post(`/leads/${id}/convert`, { clienteId });
+        return response.data;
+    }
+};
+
 // ==================== TAREFAS ====================
 export const tarefasAPI = {
     getAll: async (filters = {}) => {
@@ -175,6 +208,105 @@ export const tarefasAPI = {
 
     delete: async (id) => {
         const response = await api.delete(`/tarefas/${id}`);
+        return response.data;
+    }
+};
+
+// ==================== PROPOSTAS ====================
+export const propostasAPI = {
+    getAll: async (filters = {}) => {
+        const response = await api.get('/propostas', { params: filters });
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`/propostas/${id}`);
+        return response.data;
+    },
+
+    create: async (propostaData) => {
+        const response = await api.post('/propostas', propostaData);
+        return response.data;
+    },
+
+    update: async (id, propostaData) => {
+        const response = await api.put(`/propostas/${id}`, propostaData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        const response = await api.delete(`/propostas/${id}`);
+        return response.data;
+    },
+
+    aprovar: async (id) => {
+        const response = await api.post(`/propostas/${id}/aprovar`);
+        return response.data;
+    },
+
+    recusar: async (id, motivo) => {
+        const response = await api.post(`/propostas/${id}/recusar`, { motivo });
+        return response.data;
+    }
+};
+
+// ==================== CONTRATOS ====================
+export const contratosAPI = {
+    getAll: async (filters = {}) => {
+        const response = await api.get('/contratos', { params: filters });
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`/contratos/${id}`);
+        return response.data;
+    },
+
+    create: async (contratoData) => {
+        const response = await api.post('/contratos', contratoData);
+        return response.data;
+    },
+
+    update: async (id, contratoData) => {
+        const response = await api.put(`/contratos/${id}`, contratoData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        const response = await api.delete(`/contratos/${id}`);
+        return response.data;
+    }
+};
+
+// ==================== PAGAMENTOS ====================
+export const pagamentosAPI = {
+    getAll: async (filters = {}) => {
+        const response = await api.get('/pagamentos', { params: filters });
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`/pagamentos/${id}`);
+        return response.data;
+    },
+
+    create: async (pagamentoData) => {
+        const response = await api.post('/pagamentos', pagamentoData);
+        return response.data;
+    },
+
+    update: async (id, pagamentoData) => {
+        const response = await api.put(`/pagamentos/${id}`, pagamentoData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        const response = await api.delete(`/pagamentos/${id}`);
+        return response.data;
+    },
+
+    marcarComoPago: async (id) => {
+        const response = await api.post(`/pagamentos/${id}/pagar`);
         return response.data;
     }
 };

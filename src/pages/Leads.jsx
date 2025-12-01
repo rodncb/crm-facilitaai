@@ -11,6 +11,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import EmojiPickerInput from "../components/EmojiPickerInput";
+import { leadsAPI } from "../services/api";
 import "./Leads.css";
 
 const Leads = () => {
@@ -72,34 +73,35 @@ const Leads = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [observacoes, setObservacoes] = useState("");
 
-  // Carregar leads do localStorage ao iniciar
+  // Carregar leads da API ao iniciar
   useEffect(() => {
-    const leadsSalvos = localStorage.getItem("leads");
-    if (leadsSalvos) {
-      try {
-        setLeads(JSON.parse(leadsSalvos));
-      } catch (error) {
-        
-      }
-    }
+    loadLeads();
   }, []);
 
-  // Salvar leads no localStorage sempre que a lista mudar
-  useEffect(() => {
-    if (leads.length > 0) {
-      try {
-        localStorage.setItem("leads", JSON.stringify(leads));
-
-        // Verificar imediatamente se os dados foram salvos corretamente
-        const verificarLeadsSalvos = localStorage.getItem("leads");
-        if (verificarLeadsSalvos) {
-          // dados verificados com sucesso
-        }
-      } catch (error) {
-        
+  const loadLeads = async () => {
+    try {
+      const response = await leadsAPI.getAll();
+      if (response.success) {
+        // Mapear dados da API para o formato esperado pelo frontend
+        const leadsFormatados = response.data.map(lead => ({
+          id: lead._id,
+          nome: lead.nome,
+          empresa: lead.empresa || '',
+          cargo: lead.cargo || '',
+          email: lead.email,
+          telefone: lead.telefone,
+          status: lead.status,
+          origem: lead.origem,
+          observacoes: lead.observacoes || '',
+          dataCriacao: new Date(lead.createdAt).toLocaleDateString('pt-BR'),
+          proximoFollowup: lead.proximoFollowup ? lead.proximoFollowup.split('T')[0] : ''
+        }));
+        setLeads(leadsFormatados);
       }
+    } catch (error) {
+      // Manter leads exemplo se API falhar
     }
-  }, [leads]);
+  };
 
   const formatarData = (data) => {
     if (!data) return "";
@@ -113,37 +115,37 @@ const Leads = () => {
     setShowForm(true);
   };
 
-  const handleDeleteLead = (leadId) => {
+  const handleDeleteLead = async (leadId) => {
     if (window.confirm("Tem certeza que deseja excluir este lead?")) {
-      const leadsAtualizados = leads.filter((lead) => lead.id !== leadId);
-      setLeads(leadsAtualizados);
+      try {
+        await leadsAPI.delete(leadId);
+        const leadsAtualizados = leads.filter((lead) => lead.id !== leadId);
+        setLeads(leadsAtualizados);
+      } catch (error) {
+        alert("Erro ao excluir lead. Tente novamente.");
+      }
     }
   };
 
-  const handleSaveLead = (e) => {
+  const handleSaveLead = async (e) => {
     e.preventDefault();
 
-    // Obter os valores diretamente dos inputs (método alternativo à FormData)
     const nome = e.target.elements.nome?.value || "";
     const empresa = e.target.elements.empresa?.value || "";
     const cargo = e.target.elements.cargo?.value || "";
     const email = e.target.elements.email?.value || "";
     const telefone = e.target.elements.telefone?.value || "";
-    const status = e.target.elements.status?.value || "novo"; // Default para novo
+    const status = e.target.elements.status?.value || "novo";
     const origem = e.target.elements.origem?.value || "";
     const proximoFollowup = e.target.elements.proximoFollowup?.value || "";
-    // Observações is managed via state or we need to handle it differently since it's a custom component
-    // We'll need to add state for it in the form, but for now let's assume we can get it if we attach it to a hidden input or manage state.
-    // Actually, EmojiPickerInput takes value and onChange. So we need state for the form.
-    // Let's refactor the form to use state for this field or all fields.
-    // Since refactoring all fields is risky, let's just add state for observacoes.
 
-    // Wait, I need to add the state logic first. I'll do that in a separate step or use a ref.
-    // Let's use a ref or state. State is better.
-    // I'll skip this edit and do a multi_replace to add state and the field.
+    // Verificar campos obrigatórios
+    if (!nome || !email || !telefone) {
+      alert("Por favor, preencha pelo menos o nome, email e telefone do lead.");
+      return;
+    }
 
-    // Criar o objeto lead
-    const newLead = {
+    const leadData = {
       nome,
       empresa,
       cargo,
@@ -151,48 +153,53 @@ const Leads = () => {
       telefone,
       status,
       origem,
-      dataCriacao: new Date().toLocaleDateString(),
-      proximoFollowup,
+      proximoFollowup: proximoFollowup || undefined,
       observacoes,
     };
 
-    // Verificar se os campos obrigatórios estão preenchidos
-    if (!nome || !empresa || !email) {
-      alert("Por favor, preencha pelo menos o nome, empresa e email do lead.");
-      return;
+    try {
+      if (editingLead) {
+        // Atualizar lead existente
+        const response = await leadsAPI.update(editingLead.id, leadData);
+        if (response.success) {
+          await loadLeads(); // Recarregar lista
+        }
+      } else {
+        // Criar novo lead
+        const response = await leadsAPI.create(leadData);
+        if (response.success) {
+          await loadLeads(); // Recarregar lista
+        }
+      }
+      setShowForm(false);
+      setEditingLead(null);
+      setObservacoes("");
+    } catch (error) {
+      alert("Erro ao salvar lead. Verifique os dados e tente novamente.");
     }
-
-    let leadsAtualizados;
-    // Adicionar ou atualizar o lead
-    if (editingLead) {
-      // Atualização
-      leadsAtualizados = leads.map((lead) =>
-        lead.id === editingLead.id ? { ...newLead, id: lead.id } : lead
-      );
-    } else {
-      // Novo lead
-      const id = Date.now();
-      leadsAtualizados = [...leads, { ...newLead, id }];
-    }
-
-    setLeads(leadsAtualizados);
-    setShowForm(false);
-    setEditingLead(null);
   };
 
-  const handleDragEnd = (result) => {
+  const handleDragEnd = async (result) => {
     if (!result.destination) return;
 
     const { destination } = result;
-    const leadId = parseInt(result.draggableId);
+    const leadId = result.draggableId;
     const lead = leads.find((l) => l.id === leadId);
 
     if (lead) {
-      const updatedLead = { ...lead, status: destination.droppableId };
-      const leadsAtualizados = leads.map((l) =>
-        l.id === leadId ? updatedLead : l
-      );
-      setLeads(leadsAtualizados);
+      try {
+        // Atualizar status na API
+        await leadsAPI.update(leadId, { status: destination.droppableId });
+
+        // Atualizar local
+        const updatedLead = { ...lead, status: destination.droppableId };
+        const leadsAtualizados = leads.map((l) =>
+          l.id === leadId ? updatedLead : l
+        );
+        setLeads(leadsAtualizados);
+      } catch (error) {
+        alert("Erro ao atualizar status do lead.");
+      }
     }
   };
 

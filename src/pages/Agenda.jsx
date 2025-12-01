@@ -12,6 +12,8 @@ import "./Agenda.css";
 
 const Agenda = () => {
   const [eventos, setEventos] = useState([]);
+  const [historico, setHistorico] = useState([]);
+  const [abaAtiva, setAbaAtiva] = useState("calendario"); // calendario ou historico
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [modoVisualizacao, setModoVisualizacao] = useState("lista");
   const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth());
@@ -24,6 +26,7 @@ const Agenda = () => {
   // Carregar dados reais do sistema
   useEffect(() => {
     carregarEventos();
+    carregarHistorico();
   }, []);
 
   // Função para carregar os eventos (simulados e reais)
@@ -165,6 +168,72 @@ const Agenda = () => {
     }
   };
 
+  // Função para carregar histórico de atividades
+  const carregarHistorico = () => {
+    try {
+      let atividades = [];
+      let idAtividade = 1;
+
+      // Carregar leads criados
+      const leadsStr = localStorage.getItem("leads");
+      if (leadsStr) {
+        const leads = JSON.parse(leadsStr);
+        leads.forEach(lead => {
+          atividades.push({
+            id: idAtividade++,
+            tipo: "lead_criado",
+            icone: "👤",
+            titulo: "Lead criado",
+            descricao: `${lead.nome} - ${lead.empresa || 'Sem empresa'}`,
+            data: new Date(lead.dataCriacao || Date.now()),
+            cor: "#3b82f6"
+          });
+        });
+      }
+
+      // Carregar clientes criados
+      const clientesStr = localStorage.getItem("clientes");
+      if (clientesStr) {
+        const clientes = JSON.parse(clientesStr);
+        clientes.forEach(cliente => {
+          atividades.push({
+            id: idAtividade++,
+            tipo: "cliente_criado",
+            icone: "✅",
+            titulo: "Cliente convertido",
+            descricao: `${cliente.nome} - ${cliente.empresa || cliente.email}`,
+            data: new Date(cliente.dataCadastro || Date.now()),
+            cor: "#10b981"
+          });
+        });
+      }
+
+      // Carregar propostas enviadas
+      const propostasStr = localStorage.getItem("propostas");
+      if (propostasStr) {
+        const propostas = JSON.parse(propostasStr);
+        propostas.forEach(proposta => {
+          atividades.push({
+            id: idAtividade++,
+            tipo: "proposta_enviada",
+            icone: "📄",
+            titulo: "Proposta enviada",
+            descricao: `${proposta.numero} para ${proposta.cliente?.nome}`,
+            data: new Date(proposta.dataCriacao || Date.now()),
+            cor: "#8b5cf6"
+          });
+        });
+      }
+
+      // Ordenar por data (mais recente primeiro)
+      atividades.sort((a, b) => b.data - a.data);
+
+      setHistorico(atividades);
+    } catch (error) {
+      setHistorico([]);
+    }
+  };
+
   const formatarData = (dataStr) => {
     if (!dataStr) return "";
     const data = new Date(dataStr);
@@ -173,6 +242,31 @@ const Agenda = () => {
       month: "2-digit",
       year: "numeric",
     });
+  };
+
+  const formatarDataHora = (data) => {
+    if (!data) return "";
+    const d = new Date(data);
+    return d.toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
+
+  const tempoRelativo = (data) => {
+    const agora = new Date();
+    const diff = agora - new Date(data);
+    const minutos = Math.floor(diff / 60000);
+    const horas = Math.floor(minutos / 60);
+    const dias = Math.floor(horas / 24);
+
+    if (dias > 0) return `Há ${dias} dia${dias > 1 ? 's' : ''}`;
+    if (horas > 0) return `Há ${horas} hora${horas > 1 ? 's' : ''}`;
+    if (minutos > 0) return `Há ${minutos} minuto${minutos > 1 ? 's' : ''}`;
+    return 'Agora mesmo';
   };
 
   const getStatusClass = (status) => {
@@ -302,6 +396,25 @@ const Agenda = () => {
     <div className="agenda-container">
       <div className="agenda-header">
         <h1>Agenda</h1>
+        <div className="abas-toggle">
+          <button
+            className={`aba-button ${abaAtiva === "calendario" ? "active" : ""}`}
+            onClick={() => setAbaAtiva("calendario")}
+          >
+            📅 Calendário
+          </button>
+          <button
+            className={`aba-button ${abaAtiva === "historico" ? "active" : ""}`}
+            onClick={() => setAbaAtiva("historico")}
+          >
+            📜 Histórico
+          </button>
+        </div>
+      </div>
+
+      {abaAtiva === "calendario" && (
+      <>
+      <div className="agenda-subheader">
         <div className="visualizacao-toggle">
           <button
             className={`view-button ${
@@ -413,6 +526,39 @@ const Agenda = () => {
             <div>Sáb</div>
           </div>
           <div className="calendario-grid">{gerarCalendario()}</div>
+        </div>
+      )}
+      </>
+      )}
+
+      {abaAtiva === "historico" && (
+        <div className="historico-container">
+          <div className="historico-header">
+            <h2>Histórico de Atividades</h2>
+            <p>Todas as ações realizadas no CRM</p>
+          </div>
+          <div className="historico-timeline">
+            {historico.length > 0 ? (
+              historico.map(atividade => (
+                <div key={atividade.id} className="historico-item">
+                  <div className="historico-icone" style={{ backgroundColor: atividade.cor }}>
+                    {atividade.icone}
+                  </div>
+                  <div className="historico-content">
+                    <div className="historico-titulo">{atividade.titulo}</div>
+                    <div className="historico-descricao">{atividade.descricao}</div>
+                    <div className="historico-data">
+                      {tempoRelativo(atividade.data)} • {formatarDataHora(atividade.data)}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="historico-vazio">
+                <p>Nenhuma atividade registrada ainda</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

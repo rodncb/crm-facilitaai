@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { clientesAPI, tarefasAPI } from '../services/api';
 import './ClientesAdmin.css';
 
@@ -93,7 +94,24 @@ const ClientesAdmin = () => {
             await tarefasAPI.delete(tarefaId);
             loadTarefasCliente(clienteSelecionado._id);
         } catch (error) {
-            
+
+        }
+    };
+
+    const handleDragEnd = async (result) => {
+        if (!result.destination) return;
+
+        const { source, destination } = result;
+        if (source.droppableId === destination.droppableId) return;
+
+        const tarefaId = result.draggableId;
+        const novoStatus = destination.droppableId;
+
+        try {
+            await tarefasAPI.updateStatus(tarefaId, novoStatus);
+            loadTarefasCliente(clienteSelecionado._id);
+        } catch (error) {
+            alert('Erro ao atualizar status da tarefa');
         }
     };
 
@@ -244,66 +262,75 @@ const ClientesAdmin = () => {
                                 </form>
                             )}
 
-                            <div className="tarefas-list">
-                                {tarefas.length > 0 ? (
-                                    tarefas.map(tarefa => (
-                                        <div key={tarefa._id} className="tarefa-card">
-                                            <div className="tarefa-header">
-                                                <div className="tarefa-status-icon">
-                                                    {getStatusIcon(tarefa.status)}
-                                                </div>
-                                                <div className="tarefa-info">
-                                                    <div className="tarefa-titulo">{tarefa.titulo}</div>
-                                                    <div className="tarefa-descricao">{tarefa.descricao}</div>
-                                                </div>
+                            <DragDropContext onDragEnd={handleDragEnd}>
+                                <div className="kanban-board">
+                                    {['pendente', 'em_andamento', 'concluida'].map(status => (
+                                        <Droppable key={status} droppableId={status}>
+                                            {(provided, snapshot) => (
                                                 <div
-                                                    className="tarefa-prioridade"
-                                                    style={{ backgroundColor: getPrioridadeColor(tarefa.prioridade) }}
+                                                    ref={provided.innerRef}
+                                                    {...provided.droppableProps}
+                                                    className={`kanban-column ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
                                                 >
-                                                    {tarefa.prioridade}
+                                                    <div className="kanban-column-header">
+                                                        <span className="column-icon">{getStatusIcon(status)}</span>
+                                                        <h3>{status === 'pendente' ? 'A Fazer' : status === 'em_andamento' ? 'Em Andamento' : 'Concluída'}</h3>
+                                                        <span className="column-count">
+                                                            {tarefas.filter(t => t.status === status).length}
+                                                        </span>
+                                                    </div>
+                                                    <div className="kanban-column-content">
+                                                        {tarefas.filter(t => t.status === status).map((tarefa, index) => (
+                                                            <Draggable key={tarefa._id} draggableId={tarefa._id} index={index}>
+                                                                {(provided, snapshot) => (
+                                                                    <div
+                                                                        ref={provided.innerRef}
+                                                                        {...provided.draggableProps}
+                                                                        {...provided.dragHandleProps}
+                                                                        className={`tarefa-card ${snapshot.isDragging ? 'dragging' : ''}`}
+                                                                    >
+                                                                        <div className="tarefa-header">
+                                                                            <div className="tarefa-info">
+                                                                                <div className="tarefa-titulo">{tarefa.titulo}</div>
+                                                                                <div className="tarefa-descricao">{tarefa.descricao}</div>
+                                                                            </div>
+                                                                            <div
+                                                                                className="tarefa-prioridade"
+                                                                                style={{ backgroundColor: getPrioridadeColor(tarefa.prioridade) }}
+                                                                            >
+                                                                                {tarefa.prioridade}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="tarefa-meta">
+                                                                            {tarefa.dataVencimento && (
+                                                                                <span className="tarefa-data">
+                                                                                    📅 {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="tarefa-actions">
+                                                                            <button
+                                                                                className="btn-deletar-small"
+                                                                                onClick={() => handleDeletarTarefa(tarefa._id)}
+                                                                            >
+                                                                                🗑️
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </Draggable>
+                                                        ))}
+                                                        {provided.placeholder}
+                                                        {tarefas.filter(t => t.status === status).length === 0 && (
+                                                            <p className="empty-column">Nenhuma tarefa</p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="tarefa-meta">
-                                                {tarefa.dataVencimento && (
-                                                    <span className="tarefa-data">
-                                                        📅 {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}
-                                                    </span>
-                                                )}
-                                                {tarefa.responsavel && (
-                                                    <span className="tarefa-responsavel">
-                                                        👤 {tarefa.responsavel.nome}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="tarefa-actions">
-                                                {tarefa.status !== 'concluida' && (
-                                                    <button
-                                                        className="btn-concluir"
-                                                        onClick={() => handleAtualizarStatusTarefa(tarefa._id, 'concluida')}
-                                                    >
-                                                        ✓ Concluir
-                                                    </button>
-                                                )}
-                                                {tarefa.status === 'pendente' && (
-                                                    <button
-                                                        className="btn-iniciar"
-                                                        onClick={() => handleAtualizarStatusTarefa(tarefa._id, 'em_andamento')}
-                                                    >
-                                                        ▶ Iniciar
-                                                    </button>
-                                                )}
-                                                <button
-                                                    className="btn-deletar"
-                                                    onClick={() => handleDeletarTarefa(tarefa._id)}
-                                                >
-                                                    🗑️
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="empty-state">Nenhuma tarefa para este cliente</p>
-                                )}
+                                            )}
+                                        </Droppable>
+                                    ))}
+                                </div>
+                            </DragDropContext>
                             </div>
                         </>
                     ) : (
